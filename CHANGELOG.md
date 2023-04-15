@@ -1,3 +1,15 @@
+# v0.2.0 (2023-04-15)
+
+## Features
+
+- Rewrote in TypeScript with now type declarations
+- NodeJS API (as an import and no more as a script)
+
+## Bug fixes
+
+- Remove mention of "RxPlayer" in page titles
+- Various minor CSS fixes
+
 # v0.1.1 (2023-04-07)
 
 ## Bug fixes
