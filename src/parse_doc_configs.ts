@@ -1,16 +1,88 @@
-const process = require("process");
-const { promisify } = require("util");
-const fs = require("fs");
-const path = require("path");
+import * as process from "process";
+import { promisify } from "util";
+import * as fs from "fs";
+import * as path from "path";
 
-module.exports = async function parseDocConfigs(
-  baseInDir,
-  baseOutDir,
-  version
-) {
+export interface VersionCategory {
+  type: "version";
+}
+
+export interface ExternalLinkCategory {
+  type: "external-link";
+  link: string;
+  displayName: string;
+}
+
+export interface GithubLinkCategory {
+  type: "github-link";
+  link: string;
+}
+
+export interface SearchCategory {
+  type: "search";
+}
+
+export interface LocalDocCategory {
+  type: "local-doc";
+  displayName: string;
+  description: string | undefined;
+  firstPage: string | undefined;
+  pages: LocalDocInformation[];
+}
+
+export interface LocalDocInformation {
+  isPageGroup: boolean;
+  displayName: string;
+  description: string | undefined;
+  inputFile?: string;
+  outputFile?: string;
+  pages?: LocalDocInformation[] | undefined;
+}
+
+export interface LogoInformation {
+  /** Optional link to redirect to when clicking on the logo. */
+  link?: string | undefined;
+
+  /** Optional URL to the image of the logo. */
+  url?: string | undefined;
+
+  /** Optional Path to the image of the logo. */
+  srcPath?: string | undefined;
+}
+
+export interface VersionInformation {
+  version: string;
+  /** Optional link to redirect to when clicking on the version. */
+  link?: string | undefined;
+}
+
+export type LinkCategory =
+  | VersionCategory
+  | ExternalLinkCategory
+  | GithubLinkCategory
+  | SearchCategory
+  | LocalDocCategory;
+
+export interface ParsedDocConfig {
+  versionInfo: undefined | VersionInformation;
+  logo: undefined | LogoInformation;
+  favicon:
+    | undefined
+    | {
+        srcPath?: string | undefined;
+      };
+  links: LinkCategory[];
+  linksRightIndex: number;
+}
+
+export default async function parseDocConfigs(
+  baseInDir: string,
+  baseOutDir: string,
+  version: string | undefined
+): Promise<ParsedDocConfig> {
   const rootConfigFileName = path.join(baseInDir, ".docConfig.json");
   const rootConfig = await parseAndCheckRootConfigFile(rootConfigFileName);
-  const ret = {
+  const ret: ParsedDocConfig = {
     versionInfo: undefined,
     logo: undefined,
     favicon: undefined,
@@ -19,7 +91,7 @@ module.exports = async function parseDocConfigs(
   };
 
   if (typeof version === "string") {
-    ret.versionInfo = { version };
+    ret.versionInfo = { version, link: undefined };
     if (typeof rootConfig.otherVersionsLink === "string") {
       ret.versionInfo.link = rootConfig.otherVersionsLink;
     }
@@ -43,10 +115,14 @@ module.exports = async function parseDocConfigs(
   for (let i = 0; i < categoryLinks.length; i++) {
     const category = categoryLinks[i];
 
-    let parsedCategory;
+    let parsedCategory: LinkCategory | undefined;
     switch (category.type) {
       case "local-doc":
-        parsedCategory = await parseLocalDocCategory(category, baseInDir, baseOutDir);
+        parsedCategory = await parseLocalDocCategory(
+          category,
+          baseInDir,
+          baseOutDir
+        );
         break;
       case "version":
         parsedCategory = { type: "version" };
@@ -55,7 +131,7 @@ module.exports = async function parseDocConfigs(
         parsedCategory = {
           type: "external-link",
           link: category.link,
-          displayName: category.displayName
+          displayName: category.displayName,
         };
         break;
       case "github-link":
@@ -68,19 +144,21 @@ module.exports = async function parseDocConfigs(
         parsedCategory = { type: "search" };
         break;
     }
-    ret.links.push(parsedCategory);
+    if (parsedCategory !== undefined) {
+      ret.links.push(parsedCategory);
+    }
   }
   return ret;
-};
+}
 
 async function parseLocalDocCategory(
-  category,
-  baseInDir,
-  baseOutDir
-) {
+  category: any,
+  baseInDir: string,
+  baseOutDir: string
+): Promise<LocalDocCategory> {
   const categoryPath = path.join(baseInDir, category.path);
   const categoryOutPath = path.join(baseOutDir, category.path);
-  const parsedCategory = {
+  const parsedCategory: LocalDocCategory = {
     type: "local-doc",
     displayName: category.displayName,
     description: category.description,
@@ -95,16 +173,16 @@ async function parseLocalDocCategory(
     try {
       pageStat = await promisify(fs.stat)(pagePath);
     } catch (err) {
-      const srcMessage = (err ?? {}).message ?? "Unknown error";
+      const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
       console.error(`Error: Cannot run stat on "${pagePath}": ${srcMessage}`);
       process.exit(1);
     }
 
     if (pageStat.isDirectory()) {
-      const parsedPage = {
+      const parsedPage: LocalDocInformation = {
         isPageGroup: true,
         displayName: page.displayName,
-        description: path.description,
+        description: page.description,
         pages: [],
       };
       parsedCategory.pages.push(parsedPage);
@@ -112,25 +190,37 @@ async function parseLocalDocCategory(
       const pageGroupConfig = await parseAndCheckSubConfigFile(pageCfgFileName);
       for (const subPage of pageGroupConfig.pages) {
         const subPagePath = path.join(pagePath, subPage.path);
-        const subPageOutPath = path.join(categoryOutPath, page.path, subPage.path);
+        const subPageOutPath = path.join(
+          categoryOutPath,
+          page.path,
+          subPage.path
+        );
         let subPageState;
         try {
           subPageState = await promisify(fs.stat)(subPagePath);
         } catch (err) {
-          const srcMessage = (err ?? {}).message ?? "Unknown error";
-          console.error(`Error: Cannot run stat on "${subPagePath}": ${srcMessage}`);
+          const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
+          console.error(
+            `Error: Cannot run stat on "${subPagePath}": ${srcMessage}`
+          );
           process.exit(1);
         }
 
         if (subPageState.isDirectory()) {
           console.error(
-            "Error: Category page depth cannot exceed 2 yet \"" +
-              subPagePath + "\" is a directory."
+            'Error: Category page depth cannot exceed 2 yet "' +
+              subPagePath +
+              '" is a directory.'
           );
           process.exit(1);
         }
-        const outputFile = path.join(path.dirname(subPageOutPath),
-                                     path.basename(subPagePath, ".md") + ".html");
+        const outputFile = path.join(
+          path.dirname(subPageOutPath),
+          path.basename(subPagePath, ".md") + ".html"
+        );
+        if (parsedPage.pages === undefined) {
+          parsedPage.pages = [];
+        }
         parsedPage.pages.push({
           isPageGroup: false,
           displayName: subPage.displayName,
@@ -139,9 +229,11 @@ async function parseLocalDocCategory(
           outputFile: path.normalize(path.resolve(outputFile)),
         });
       }
-    } else if(pageStat.isFile()) {
-      const outputFile =
-        path.join(categoryOutPath, path.basename(pagePath, ".md") + ".html");
+    } else if (pageStat.isFile()) {
+      const outputFile = path.join(
+        categoryOutPath,
+        path.basename(pagePath, ".md") + ".html"
+      );
       parsedCategory.pages.push({
         isPageGroup: false,
         displayName: page.displayName,
@@ -156,7 +248,10 @@ async function parseLocalDocCategory(
   if (parsedCategory.pages.length > 0) {
     if (!parsedCategory.pages[0].isPageGroup) {
       parsedCategory.firstPage = parsedCategory.pages[0].outputFile;
-    } else if (parsedCategory.pages[0].pages.length > 0) {
+    } else if (
+      parsedCategory.pages[0].pages !== undefined &&
+      parsedCategory.pages[0].pages.length > 0
+    ) {
       parsedCategory.firstPage = parsedCategory.pages[0].pages[0].outputFile;
     }
   }
@@ -170,17 +265,19 @@ async function parseLocalDocCategory(
  * @param {string} rootConfigFileName
  * @returns {Promise.<Object>}
  */
-async function parseAndCheckRootConfigFile(rootConfigFileName) {
+async function parseAndCheckRootConfigFile(
+  rootConfigFileName: string
+): Promise<any> {
   let configStr;
   try {
     configStr = await promisify(fs.readFile)(rootConfigFileName, "utf8");
   } catch (err) {
-    const srcMessage = (err ?? {}).message ?? "Unknown error";
+    const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
     console.error(
-      "Error: Impossible to read Root .docConfig.json file (\"" +
+      'Error: Impossible to read Root .docConfig.json file ("' +
         rootConfigFileName +
-        "\"): " +
-      srcMessage
+        '"): ' +
+        srcMessage
     );
     process.exit(1);
   }
@@ -189,7 +286,7 @@ async function parseAndCheckRootConfigFile(rootConfigFileName) {
   try {
     config = JSON.parse(configStr);
   } catch (err) {
-    const srcMessage = (err ?? {}).message ?? "Unknown error";
+    const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
     exitWithInvalidRootConfig(srcMessage);
   }
 
@@ -211,7 +308,10 @@ async function parseAndCheckRootConfigFile(rootConfigFileName) {
       );
     }
 
-    if (config.logo.link !== undefined && typeof config.logo.link !== "string") {
+    if (
+      config.logo.link !== undefined &&
+      typeof config.logo.link !== "string"
+    ) {
       exitWithInvalidRootConfig(
         `The "logo.link" property, if defined, should be set as a string.`
       );
@@ -221,8 +321,8 @@ async function parseAndCheckRootConfigFile(rootConfigFileName) {
   if (config.favicon !== undefined) {
     if (typeof config.favicon.srcPath !== "string") {
       exitWithInvalidRootConfig(
-        `The "favicon" property, if defined, should contain a "srcPath" `+
-         "property set as a string."
+        `The "favicon" property, if defined, should contain a "srcPath" ` +
+          "property set as a string."
       );
     }
   }
@@ -256,7 +356,7 @@ async function parseAndCheckRootConfigFile(rootConfigFileName) {
 
   return config;
 
-  function exitWithInvalidRootConfig(reason) {
+  function exitWithInvalidRootConfig(reason: string): never {
     console.error(
       `Error: Root .docConfig.json file ("${rootConfigFileName}") is invalid: ${reason}`
     );
@@ -268,13 +368,15 @@ async function parseAndCheckRootConfigFile(rootConfigFileName) {
  * @param {string} filename
  * @returns {Promise.<Object>}
  */
-async function parseAndCheckSubConfigFile(filename) {
+async function parseAndCheckSubConfigFile(filename: string): Promise<any> {
   let configStr;
   try {
     configStr = await promisify(fs.readFile)(filename, "utf8");
   } catch (err) {
-    const srcMessage = (err ?? {}).message ?? "Unknown error";
-    console.error(`Error: Impossible to read "${filename}" config file: ${srcMessage}`);
+    const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
+    console.error(
+      `Error: Impossible to read "${filename}" config file: ${srcMessage}`
+    );
     process.exit(1);
   }
 
@@ -282,7 +384,7 @@ async function parseAndCheckSubConfigFile(filename) {
   try {
     config = JSON.parse(configStr);
   } catch (err) {
-    const srcMessage = (err ?? {}).message ?? "Unknown error";
+    const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
     console.error(`Error: "${filename}" config file is invalid: ${srcMessage}`);
     process.exit(1);
   }
@@ -295,10 +397,7 @@ async function parseAndCheckSubConfigFile(filename) {
     process.exit(1);
   }
 
-  if (
-    !Array.isArray(config.pages) ||
-    config.pages.length === 0
-  ) {
+  if (!Array.isArray(config.pages) || config.pages.length === 0) {
     console.error(
       `Error: "${filename}" config file is invalid: ` +
         `Should have a "pages" property with at least one entry.`

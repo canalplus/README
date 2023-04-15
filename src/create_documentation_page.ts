@@ -1,26 +1,27 @@
-const { promisify } = require("util");
-const cheerio = require("cheerio");
-const fs = require("fs");
-const path = require("path");
-const buildSearchIndex = require("./build_search_index.js");
-const convertMDToHTML = require("./convert_MD_to_HMTL.js");
-const constructTableOfContents = require("./construct_table_of_contents.js");
-const constructHtml = require("./construct_html.js");
-const {
-  mkdirParent,
-  toUriCompatibleRelativePath,
-} = require("./utils.js");
+import { promisify } from "util";
+import { AnyNode, Cheerio, load } from "cheerio";
+import * as fs from "fs";
+import * as path from "path";
+import getSearchDataForContent, {
+  FileSearchIndex,
+} from "./get_search_data_for_content.js";
+import convertMDToHTML from "./convert_MD_to_HMTL.js";
+import constructTableOfContents from "./construct_table_of_contents.js";
+import generatePageHtml from "./generate_page_html.js";
+import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 /**
  * Create and write HTML page output file from the markdown input file.
  * @param {Object} options
  * @returns {Promise}
  */
-module.exports = async function createDocumentationPage({
+export default async function createDocumentationPage({
   // Absolute path to the root dir where all outputed files will be
   baseOutDir,
-  // Relative CSS URIs on this page
-  cssUris,
+  // Relative CSS URLs on this page
+  cssUrls,
+  // Eventual URL to the favicon
+  faviconUrl,
   // Absolute path to the file that should be converted
   inputFile,
   // Function translating links in Markdown files to an URL form to the right file
@@ -31,18 +32,44 @@ module.exports = async function createDocumentationPage({
   nextPageInfo,
   // Absolute path where the generated page should be generated.
   outputFile,
+  // HTML string for the complete list of documentation pages with links
+  pageListHtml,
   // Title of the corresponding HTML page
   pageTitle,
   // Information relative to the previous documentation page, `null` if none.
   prevPageInfo,
-  // Relative JS URIs on this page
-  scriptUris,
+  // Relative JS URLs on this page
+  scriptUrls,
   // Array corresponding to the complete search index.
   // It will be completed with data present in this file.
   searchIndex,
   // HTML string for the sidebar
   sidebarHtml,
-}) {
+}: {
+  baseOutDir: string;
+  cssUrls: string[];
+  faviconUrl: string | null;
+  inputFile: string;
+  linkTranslator: (link: string) => string | undefined;
+  navBarHtml: string;
+  nextPageInfo: {
+    link: string;
+    name: string;
+  } | null;
+  outputFile: string;
+  pageListHtml: string;
+  pageTitle: string;
+  prevPageInfo: {
+    link: string;
+    name: string;
+  } | null;
+  scriptUrls: string[];
+  searchIndex: Array<{
+    file: string;
+    index: FileSearchIndex[];
+  }>;
+  sidebarHtml: string;
+}): Promise<void> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
     path.dirname(outputFile)
@@ -63,22 +90,22 @@ module.exports = async function createDocumentationPage({
   const { content, tocMd, nbTocElements } = constructTableOfContents(data);
 
   let contentHtml = await parseMD(content, inputDir, outputDir, linkTranslator);
-  const indexForFile = buildSearchIndex(contentHtml);
+  const searchData = getSearchDataForContent(contentHtml);
   searchIndex.push({
     file: outputUrlFromRoot,
-    index: indexForFile,
+    index: searchData,
   });
   contentHtml += constructNextPreviousPage(prevPageInfo, nextPageInfo);
 
-  const tocHtml = nbTocElements > 1 ?
-    generateTocbarHtml(tocMd) :
-    "";
-  const html = constructHtml({
+  const tocHtml = nbTocElements > 1 ? constructTocBarHtml(tocMd) : "";
+  const html = generatePageHtml({
     contentHtml,
-    cssUris,
+    cssUrls,
+    faviconUrl,
     navBarHtml,
+    pageListHtml,
     rootUrl,
-    scriptUris,
+    scriptUrls,
     sidebarHtml,
     title: pageTitle,
     tocHtml,
@@ -92,15 +119,19 @@ module.exports = async function createDocumentationPage({
     /* eslint-enable no-console */
     return;
   }
-};
+}
 
-
-async function updateMediaTag(mediaTag, inputDir, outputDir) {
-  if (!mediaTag.attr("src")) {
+async function updateMediaTag(
+  mediaTag: Cheerio<AnyNode>,
+  inputDir: string,
+  outputDir: string
+): Promise<void> {
+  const src = mediaTag.attr("src");
+  if (!src) {
     return;
   }
-  const inputFile = path.join(inputDir, mediaTag.attr("src"));
-  const outputFile = path.join(outputDir, mediaTag.attr("src"));
+  const inputFile = path.join(inputDir, src);
+  const outputFile = path.join(outputDir, src);
   if (await promisify(fs.exists)(outputFile)) {
     return;
   }
@@ -110,41 +141,61 @@ async function updateMediaTag(mediaTag, inputDir, outputDir) {
     try {
       await mkdirParent(outDir);
     } catch (err) {
-      const srcMessage = (err ?? {}).message ?? "Unknown error";
-      console.error(`Error: Could not create "${outDir}" directory: ${srcMessage}`);
+      const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
+      console.error(
+        `Error: Could not create "${outDir}" directory: ${srcMessage}`
+      );
       process.exit(1);
     }
   }
-  const doesOutFileExist = await promisify(fs.exists)(outputFile);
-  if (!doesOutFileExist) {
-    await promisify(fs.copyFile)(inputFile, outputFile);
-  }
+  await promisify(fs.copyFile)(inputFile, outputFile);
 }
 
-function constructNextPreviousPage(prevPageInfo, nextPageInfo) {
+function constructNextPreviousPage(
+  prevPageInfo: {
+    link: string;
+    name: string;
+  } | null,
+  nextPageInfo: {
+    link: string;
+    name: string;
+  } | null
+): string {
   if (prevPageInfo === null && nextPageInfo === null) {
     return "";
   }
 
   const prevPageElt = createNextPrevElt(prevPageInfo, false);
   const nextPageElt = createNextPrevElt(nextPageInfo, true);
-  return `<nav class="next-previous-page-wrapper" aria-label="Navigate between pages">` +
+  return (
+    `<nav class="next-previous-page-wrapper" aria-label="Navigate between pages">` +
     prevPageElt +
     nextPageElt +
-    `</nav>`;
+    `</nav>`
+  );
 
-  function createNextPrevElt(pageInfo, isNext) {
-    const base = `<div class="next-or-previous-page${isNext ? " next-page" : ""}">`;
+  function createNextPrevElt(
+    pageInfo: {
+      link: string;
+      name: string;
+    } | null,
+    isNext: boolean
+  ): string {
+    const base = `<div class="next-or-previous-page${
+      isNext ? " next-page" : ""
+    }">`;
     if (pageInfo === null) {
       return base + "</div>";
     }
-    return base +
+    return (
+      base +
       `<a class="next-or-previous-page-link" href="${pageInfo.link}">` +
       `<div class="next-or-previous-page-link-label">` +
       (isNext ? "Next" : "Previous") +
       "</div>" +
       `<div class="next-or-previous-page-link-name">${pageInfo.name}</div>` +
-      "</a></div>";
+      "</a></div>"
+    );
   }
 }
 
@@ -159,21 +210,22 @@ function constructNextPreviousPage(prevPageInfo, nextPageInfo) {
  * from markdown to HTML. Is given the orginal link in the markdown and should
  * return the converted link.
  * If null or undefined, the links won't be converted.
- * @returns {string}
+ * @returns {Promise.<string>}
  */
-async function parseMD(data, inputDir, outputDir, linkTranslator) {
+async function parseMD(
+  data: string,
+  inputDir: string,
+  outputDir: string,
+  linkTranslator: ((link: string) => string | undefined) | null | undefined
+): Promise<string> {
   // TODO I don't understand Cheerio/Jquery here, that's plain ugly
   // use markdown-it plugin instead?
-  const $ = cheerio.load(convertMDToHTML(data));
+  const $ = load(convertMDToHTML(data));
 
   if (linkTranslator) {
     $("a").each((_, elem) => {
       const href = $(elem).attr("href");
-      if (
-        typeof href === "string" &&
-        !/^(?:[a-z]+:)/.test(href) &&
-        href[0] !== "#"
-      ) {
+      if (typeof href === "string") {
         $(elem).attr("href", linkTranslator(href));
       }
     });
@@ -197,14 +249,16 @@ async function parseMD(data, inputDir, outputDir, linkTranslator) {
 /**
  * Construct the table of contents part of the HTML page, containing various
  * links to the current documentation page.
- * @param {string} toc - Markdown for the table of contents under a list form.
+ * @param {string} tocMd - Markdown for the table of contents under a list form.
  * @returns {string} - sidebar div tag
  */
-function generateTocbarHtml(tocMd) {
+function constructTocBarHtml(tocMd: string): string {
   const tocHtml = convertMDToHTML(tocMd);
-  return "<div class=\"tocbar-wrapper\">" +
-           "<div class=\"tocbar\">" +
-             tocHtml +
-           "</div>" +
-         "</div>";
+  return (
+    '<div class="tocbar-wrapper">' +
+    '<div class="tocbar">' +
+    tocHtml +
+    "</div>" +
+    "</div>"
+  );
 }

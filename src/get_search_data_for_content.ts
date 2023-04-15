@@ -1,23 +1,35 @@
-const cheerio = require("cheerio");
+import { AnyNode, load } from "cheerio";
+
+export interface FileSearchIndex {
+  h1: string | undefined;
+  h2?: string | undefined;
+  h3?: string | undefined;
+  body: string | undefined;
+  anchorH1?: string | undefined;
+  anchorH2?: string | undefined;
+  anchorH3?: string | undefined;
+}
 
 /**
  * Generate search data linked to the given content.
  * @param {string} contentHtml
  * @returns {Array.<Object>}
  */
-function getSearchDataForContent(contentHtml) {
-  const indexForFile = [];
-  const $ = cheerio.load(contentHtml);
+export default function getSearchDataForContent(
+  contentHtml: string
+): FileSearchIndex[] {
+  const indexForFile: FileSearchIndex[] = [];
+  const $ = load(contentHtml);
   const children = $("body").children().toArray();
 
-  let currentH1;
-  let currentH2;
-  let currentH3;
-  let currentH1Anchor;
-  let currentH2Anchor;
-  let currentH3Anchor;
-  let currentBody = [];
-  let currentLevel;
+  let currentH1: string | undefined;
+  let currentH2: string | undefined;
+  let currentH3: string | undefined;
+  let currentH1Anchor: string | undefined;
+  let currentH2Anchor: string | undefined;
+  let currentH3Anchor: string | undefined;
+  let currentBody: string[] = [];
+  let currentLevel: string | undefined;
   for (var i = 0; i < children.length; i++) {
     const child = children[i];
     switch (child.name.toLowerCase()) {
@@ -76,9 +88,7 @@ function getSearchDataForContent(contentHtml) {
 
   function anounceLastElement() {
     if (currentLevel === "h3") {
-      const body = currentBody.length > 0 ?
-        currentBody.join(" ") :
-        "";
+      const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
         h1: currentH1,
         h2: currentH2,
@@ -89,9 +99,7 @@ function getSearchDataForContent(contentHtml) {
         anchorH3: currentH3Anchor,
       });
     } else if (currentLevel === "h2") {
-      const body = currentBody.length > 0 ?
-        currentBody.join(" ") :
-        "";
+      const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
         h1: currentH1,
         h2: currentH2,
@@ -100,9 +108,7 @@ function getSearchDataForContent(contentHtml) {
         anchorH2: currentH2Anchor,
       });
     } else if (currentLevel === "h1") {
-      const body = currentBody.length > 0 ?
-        currentBody.join(" ") :
-        "";
+      const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
         h1: currentH1,
         body,
@@ -112,7 +118,7 @@ function getSearchDataForContent(contentHtml) {
     currentBody.length = 0;
   }
 
-  function getAnchorName(elt) {
+  function getAnchorName(elt: AnyNode | undefined) {
     if (elt === undefined) {
       return;
     }
@@ -133,5 +139,3 @@ function getSearchDataForContent(contentHtml) {
     }
   }
 }
-
-module.exports = getSearchDataForContent;

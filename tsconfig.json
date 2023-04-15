@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "outDir": "./build",
+    "allowJs": false,
+    "declaration": true,
+    "target": "es2017",
+    "lib": ["es2017"],
+    "allowSyntheticDefaultImports": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": false,
+    "noImplicitAny": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "types": ["node"],
+    "module": "es2022",
+    "moduleResolution": "Node",
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

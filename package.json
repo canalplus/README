@@ -1,11 +1,13 @@
 {
   "name": "docgen.ico",
+  "type": "module",
   "version": "0.1.1",
   "description": "Yet another documentation generator with a dumb name, except it's my own this time",
-  "bin": "src/index.js",
-  "main": "src/index.js",
+  "bin": "build/index.js",
+  "main": "build/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "fmt": "prettier src/* --write src"
   },
   "author": "peaberberian",
   "license": "WTFPL",
@@ -14,5 +16,11 @@
     "highlight.js": "11.7.0",
     "html-entities": "2.3.3",
     "markdown-it": "13.0.1"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^12.2.3",
+    "@types/node": "^18.15.11",
+    "prettier": "^2.8.7",
+    "typescript": "^5.0.4"
   }
 }

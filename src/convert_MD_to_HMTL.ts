@@ -1,6 +1,8 @@
-const hljs = require("highlight.js");
-const md = require("markdown-it")({
-  highlight(str, lang) {
+import hljs from "highlight.js";
+import MarkdownIt from "markdown-it";
+
+const md = MarkdownIt({
+  highlight(str: string, lang: string): string {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(str, { language: lang }).value;
@@ -21,6 +23,6 @@ const md = require("markdown-it")({
  * @param {string} mdStr
  * @returns {string}
  */
-module.exports = function convertMDToHTML(mdStr) {
+export default function convertMDToHTML(mdStr: string): string {
   return md.render(mdStr);
-};
+}
