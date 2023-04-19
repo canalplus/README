@@ -1,3 +1,9 @@
+# v0.2.1 (2023-04-19)
+
+## Bug fixes
+
+- Fix header links when navigating in sub directories
+
 # v0.2.0 (2023-04-15)
 
 ## Features
