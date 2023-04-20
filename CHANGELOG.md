@@ -1,3 +1,9 @@
+# v0.2.3 (2023-04-21)
+
+## Bug fixes
+
+- Fix multiple quick smooth navigation between inner links
+
 # v0.2.2 (2023-04-20)
 
 ## Bug fixes
