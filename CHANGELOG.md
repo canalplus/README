@@ -1,3 +1,9 @@
+# v0.2.2 (2023-04-20)
+
+## Bug fixes
+
+- Fix documentation page's script soft navigation
+
 # v0.2.1 (2023-04-19)
 
 ## Bug fixes
