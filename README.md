@@ -28,9 +28,7 @@ formatting (e.g. editor plugins, GitHub's interface for source files...).
 
 `README` can then produce an HTML documentation from it, keeping the
 same file structure, by adding a few `.docConfig.json` files in the directories
-already-exposing your documentation. 
-
-
+already-exposing your documentation.
 
 ## Example
 
@@ -41,10 +39,34 @@ and compare it to its [original markdown files](https://github.com/canalplus/rx-
 _Yes we should probably have generated that tool's documentation through it
 instead, but we wrote this README in a haste so maybe for later :p._
 
+## Installation
+
+The README project is published under the `@canalplus/readme.doc` name on npm:
+
+```sh
+npm install @canalplus/readme.doc --save-dev
+```
+
+Or through yarn:
+
+```sh
+yarn add @canalplus/readme.doc --dev
+```
+
+It is then runnable (e.g. as an npm script in your `package.json` or through
+`npx`) through the `readme.doc` name:
+
+```sh
+readme.doc src dest
+```
+
+See below for more details on how to run it.
+
 ## How to use it
 
 If you want to use this, just create a directory where you documentation is, put
 a `.docConfig.json` JSON file at its root with the following format:
+
 ```json
 {
   // Optional object to define a logo which will be located on the top left of
@@ -151,6 +173,7 @@ directory and its subdirectories, no further ones inside the latter).
 At last, in each of the directories where markdown files are (the `"local-doc"`
 directories and their optional subdirectories), add another `.docConfig.json`
 file, with a single `pages` property.
+
 ```json
 {
   // Documentation pages, that will be linked from top to bottom
@@ -169,25 +192,27 @@ file, with a single `pages` property.
       // Name actually displayed for this directory's title on the generated
       // HTML page
       "displayName": "Tutorials"
-    },
+    }
     // ...
   ]
 }
 ```
 
 You can then generate the doc by running:
+
 ```sh
 readme.doc <PATH_TO_THE_DOC_ROOT> <PATH_FOR_THE_GENERATED_PAGES> ["<OPTIONAL_VERSION>"]
 ```
 
 Where:
-  - `PATH_TO_THE_DOC_ROOT`: is the original root where your initial
-    `.docConfig.json` is
-  - `PATH_FOR_THE_GENERATED_PAGES` is the path where the corresponding HTML
-    pages will be generated. It can also be inside
-    `PATH_TO_THE_DOC_ROOT` if you want.
-  - `OPTIONAL_VERSION` is completely optional and is the current version of the
-    project, which might be used depending on your configuration.
+
+- `PATH_TO_THE_DOC_ROOT`: is the original root where your initial
+  `.docConfig.json` is
+- `PATH_FOR_THE_GENERATED_PAGES` is the path where the corresponding HTML
+  pages will be generated. It can also be inside
+  `PATH_TO_THE_DOC_ROOT` if you want.
+- `OPTIONAL_VERSION` is completely optional and is the current version of the
+  project, which might be used depending on your configuration.
 
 You then have all your generated HTML documentation pages inside
 `PATH_FOR_THE_GENERATED_PAGES`.
