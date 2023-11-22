@@ -1,9 +1,11 @@
 {
-  "name": "readme.doc",
+  "name": "@canalplus/readme.doc",
   "type": "module",
   "version": "0.3.0",
   "description": "Readme's an Extremely Accessible Documentation MakEr",
-  "bin": "build/index.js",
+  "bin": {
+    "readme.doc": "build/index.js"
+  },
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
@@ -22,5 +24,6 @@
     "@types/node": "^18.15.11",
     "prettier": "^2.8.7",
     "typescript": "^5.0.4"
-  }
+  },
+  "types": "./build/index.d.ts"
 }

@@ -26,7 +26,7 @@ formatting (e.g. editor plugins, GitHub's interface for source files...).
 <br>
 </div>
 
-`README.js` can then produce an HTML documentation from it, keeping the
+`README` can then produce an HTML documentation from it, keeping the
 same file structure, by adding a few `.docConfig.json` files in the directories
 already-exposing your documentation. 
 
