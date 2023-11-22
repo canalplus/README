@@ -2,7 +2,7 @@
   "name": "readme.doc",
   "type": "module",
   "version": "0.2.3",
-  "description": "Yet another documentation generator with a dumb name, except it's my own this time",
+  "description": "Readme's an Extremely Accessible Documentation MakEr",
   "bin": "build/index.js",
   "main": "build/index.js",
   "scripts": {
