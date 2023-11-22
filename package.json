@@ -11,6 +11,10 @@
     "build": "tsc",
     "fmt": "prettier src/* --write src"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canalplus/README.git"
+  },
   "author": "peaberberian",
   "license": "WTFPL",
   "dependencies": {
