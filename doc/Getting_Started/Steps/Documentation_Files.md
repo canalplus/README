@@ -211,9 +211,9 @@ the documentation pages once to check the resulting anchor names before linking
 to it.
 
 Last but not least it is perfectly possible to link to an anchor in another
-Markdown page. As such, `[example](../Home.md#Installation)` will directly jump
+Markdown page. As such, `[example](../Home.md#installation)` will directly jump
 to the `Installation` chapter of the `Home.html` page:
-[example](../Home.md#Installation).
+[example](../Home.md#installation).
 
 ### Image, audio and video
 

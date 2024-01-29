@@ -71,6 +71,11 @@ export interface DocumentationPageSettings {
   sidebarHtml: string;
 }
 
+interface DocumentationPageMetadata {
+  /** All "anchors" present in the generated page. */
+  anchors: string[];
+}
+
 /**
  * Create and write HTML page output file from the markdown input file.
  * @param {Object} options
@@ -91,7 +96,7 @@ export default async function createDocumentationPage({
   scriptUrls,
   searchIndex,
   sidebarHtml,
-}: DocumentationPageSettings): Promise<void> {
+}: DocumentationPageSettings): Promise<DocumentationPageMetadata> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
     path.dirname(outputFile)
@@ -103,13 +108,13 @@ export default async function createDocumentationPage({
   try {
     data = await promisify(fs.readFile)(inputFile, "utf8");
   } catch (err) {
-    /* eslint-disable no-console */
+    /* eslint-disable-next-line no-console */
     console.error("error reading file:", err);
-    /* eslint-enable no-console */
-    return;
+    return { anchors: [] };
   }
   const inputDir = path.dirname(inputFile);
   const {
+    anchors,
     html: resHtml,
     tocMd,
     nbTocElements,
@@ -142,8 +147,9 @@ export default async function createDocumentationPage({
     /* eslint-disable no-console */
     console.error("error writing file:", err);
     /* eslint-enable no-console */
-    return;
+    return { anchors: [] };
   }
+  return { anchors };
 }
 
 /**
@@ -285,10 +291,13 @@ async function parseMD(
   tocMd: string;
   /** Number of elements in the table of content. */
   nbTocElements: number;
+  /** All anchors generated in that content. */
+  anchors: string[];
 }> {
   const $ = load(convertMDToHTML(data));
   const generatedAnchors: Partial<Record<string, true>> = {};
   const tocLines: string[] = [];
+  const anchors: string[] = [];
 
   // Go through link translator for every links originally in the file
   if (linkTranslator) {
@@ -346,6 +355,7 @@ async function parseMD(
     } else {
       prefix = "    - ";
     }
+    anchors.push(uri);
     tocLines.push(`${prefix}[${linkText}](#${uri})`);
     $(`<a name="${uri}"></a>`).insertBefore(linkElt);
   }
@@ -354,6 +364,7 @@ async function parseMD(
     html: $.html(),
     tocMd: tocLines.join("\n"),
     nbTocElements: tocLines.length,
+    anchors,
   };
 
   function generateAnchorName(title: string): string {

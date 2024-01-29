@@ -3,6 +3,7 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
 import { rimrafSync } from "rimraf";
+import AnchorChecker, { AnchorValidity } from "./anchor_checker.js";
 import createDocumentationPage from "./create_documentation_page.js";
 import generateHeaderHtml from "./generate_header_html.js";
 import generatePageListHtml from "./generate_page_list_html.js";
@@ -120,6 +121,12 @@ export default async function createDocumentation(
     await copyFileToOutputDir(config.logo.srcPath, baseInDir, baseOutDir);
   }
 
+  /**
+   * Will be used to check the validity of anchor links between documentation
+   * pages (and relative to the same page).
+   */
+  const anchorChecker = new AnchorChecker();
+
   // Construct a dictionary of markdown files to the corresponding output file.
   // This can be useful to redirect links to other converted markdowns.
   const fileDict = config.links.reduce((acc, linkInfo) => {
@@ -166,6 +173,7 @@ export default async function createDocumentation(
         const { inputFile, outputFile } = currentPage;
         if (inputFile !== undefined && outputFile !== undefined) {
           await prepareAndCreateDocumentationPage({
+            anchorChecker,
             baseOutDir,
             config,
             cssOutputPaths,
@@ -194,6 +202,7 @@ export default async function createDocumentation(
             const { inputFile, outputFile } = currentSubPage;
             if (inputFile !== undefined && outputFile !== undefined) {
               await prepareAndCreateDocumentationPage({
+                anchorChecker,
                 baseOutDir,
                 config,
                 cssOutputPaths,
@@ -217,6 +226,30 @@ export default async function createDocumentation(
     }
   }
 
+  const anchorChecks = anchorChecker.check();
+  if (anchorChecks.length > 0) {
+    for (const check of anchorChecks) {
+      if (check.validity === AnchorValidity.AnchorNotFound) {
+        let warning = `WARNING: A referenced anchor link was not found.
+  File with link: ${check.inputFileWithLink}
+  Linked file:    ${check.inputFileLinkDestination}
+  Anchor:         ${check.anchor}
+`;
+        const availableAnchors = anchorChecker.getAnchorsForInputFile(
+          check.inputFileLinkDestination
+        );
+        if (availableAnchors !== undefined && availableAnchors.length > 0) {
+          warning +=
+            "  Available Anchors: " +
+            availableAnchors.join(", ") +
+            "\n";
+        }
+        // eslint-disable-next-line no-console
+        console.warn(warning);
+      }
+    }
+  }
+
   try {
     const searchIndexLoc = path.join(
       path.resolve(baseOutDir),
@@ -232,6 +265,7 @@ export default async function createDocumentation(
 }
 
 async function prepareAndCreateDocumentationPage({
+  anchorChecker,
   baseOutDir,
   config,
   cssOutputPaths,
@@ -245,6 +279,7 @@ async function prepareAndCreateDocumentationPage({
   searchIndex,
   version,
 }: {
+  anchorChecker: AnchorChecker;
   baseOutDir: string;
   config: ParsedDocConfig;
   cssOutputPaths: string[];
@@ -341,8 +376,13 @@ async function prepareAndCreateDocumentationPage({
   );
 
   // add link translation to options
-  const linkTranslator = linkTranslatorFactory(inputFile, outDir, fileDict);
-  await createDocumentationPage({
+  const linkTranslator = linkTranslatorFactory(
+    inputFile,
+    outputFile,
+    fileDict,
+    anchorChecker
+  );
+  const { anchors } = await createDocumentationPage({
     baseOutDir,
     cssUrls,
     faviconUrl,
@@ -358,20 +398,24 @@ async function prepareAndCreateDocumentationPage({
     searchIndex,
     sidebarHtml,
   });
+  anchorChecker.addAnchorsForFile(inputFile, anchors);
 }
 
 /**
  * Generate linkTranslator functions
  * @param {string} inputFile
- * @param {string} outputDir
+ * @param {string} outputFile
  * @param {Object} fileDict
+ * @param {Object} anchorChecker
  * @returns {Function}
  */
 function linkTranslatorFactory(
   inputFile: string,
-  outputDir: string,
-  fileDict: Partial<Record<string, string>>
+  outputFile: string,
+  fileDict: Partial<Record<string, string>>,
+  anchorChecker: AnchorChecker
 ): (link: string) => string | undefined {
+  const outputDir = path.dirname(outputFile);
   /**
    * Convert links to files that will be converted to the links of the
    * corresponding converted output files.
@@ -379,7 +423,11 @@ function linkTranslatorFactory(
    * @returns {string|undefined}
    */
   return (link: string): string | undefined => {
-    if (/^(?:[a-z]+:)/.test(link) || link[0] === "#") {
+    if (/^(?:[a-z]+:)/.test(link)) {
+      return;
+    }
+    if (link[0] === "#") {
+      anchorChecker.addAnchorReference(inputFile, inputFile, link.substring(1));
       return;
     }
     const extname = path.extname(link);
@@ -395,13 +443,16 @@ function linkTranslatorFactory(
     if (translation === undefined) {
       // eslint-disable-next-line no-console
       console.warn(
-        "WARNING: Local link not found.\n",
-        "File:",
+        `WARNING: A referenced link was not found.
+  File: ${inputFile}
+  Link: ${link}
+`
+      );
+    } else if (anchor.length > 1) {
+      anchorChecker.addAnchorReference(
         inputFile,
-        "\n",
-        "Link:",
-        link,
-        "\n"
+        normalizedLink,
+        anchor.substring(1)
       );
     }
     return translation !== undefined
