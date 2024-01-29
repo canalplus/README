@@ -15,8 +15,6 @@ const md = MarkdownIt({
     return "";
   },
   html: true,
-  // XXX TODO remove?
-  typographer: true,
 });
 
 /**
