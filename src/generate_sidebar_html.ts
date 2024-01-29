@@ -34,7 +34,8 @@ export default function generateSidebarHtml(
         return (
           `<li class="sidebar-item">` +
           `<div class="sidebar-item sidebar-item-group${
-            isActive ? " active opened" : ""
+            isActive ? " active" : "" +
+            (isActive || p.defaultOpen ? " opened" : "")
           }">` +
           encode(p.displayName) +
           "</div>" +

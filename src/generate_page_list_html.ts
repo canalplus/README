@@ -54,7 +54,9 @@ export default function generatePageListHtml(
                     `</a></li>`
                   );
                 }
-                const pageActiveClasses = isPageActive ? " opened active" : "";
+                const pageActiveClasses =
+                  (isPageActive ? " active" : "") +
+                  (isPageActive || currentPage.defaultOpen ? " opened" : "");
                 const pageGroupHtml =
                   `<li>` +
                   `<div class="page-list-item page-list-group${pageActiveClasses}">` +

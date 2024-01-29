@@ -25,7 +25,6 @@ export interface SearchCategory {
 export interface LocalDocCategory {
   type: "local-doc";
   displayName: string;
-  description: string | undefined;
   firstPage: string | undefined;
   pages: LocalDocInformation[];
 }
@@ -33,10 +32,10 @@ export interface LocalDocCategory {
 export interface LocalDocInformation {
   isPageGroup: boolean;
   displayName: string;
-  description: string | undefined;
   inputFile?: string;
   outputFile?: string;
   pages?: LocalDocInformation[] | undefined;
+  defaultOpen?: boolean;
 }
 
 export interface LogoInformation {
@@ -161,7 +160,6 @@ async function parseLocalDocCategory(
   const parsedCategory: LocalDocCategory = {
     type: "local-doc",
     displayName: category.displayName,
-    description: category.description,
     firstPage: "",
     pages: [],
   };
@@ -181,8 +179,8 @@ async function parseLocalDocCategory(
     if (pageStat.isDirectory()) {
       const parsedPage: LocalDocInformation = {
         isPageGroup: true,
+        defaultOpen: page.defaultOpen === true,
         displayName: page.displayName,
-        description: page.description,
         pages: [],
       };
       parsedCategory.pages.push(parsedPage);
@@ -224,7 +222,6 @@ async function parseLocalDocCategory(
         parsedPage.pages.push({
           isPageGroup: false,
           displayName: subPage.displayName,
-          description: subPage.description,
           inputFile: path.normalize(path.resolve(subPagePath)),
           outputFile: path.normalize(path.resolve(outputFile)),
         });
@@ -237,7 +234,6 @@ async function parseLocalDocCategory(
       parsedCategory.pages.push({
         isPageGroup: false,
         displayName: page.displayName,
-        description: page.description,
         inputFile: path.normalize(path.resolve(pagePath)),
         outputFile: path.normalize(path.resolve(outputFile)),
       });
