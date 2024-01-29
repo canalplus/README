@@ -1,4 +1,4 @@
-import type { AnyNode} from "cheerio";
+import type { AnyNode } from "cheerio";
 import { load } from "cheerio";
 
 export interface FileSearchIndex {

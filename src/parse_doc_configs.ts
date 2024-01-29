@@ -4,6 +4,7 @@ import { promisify } from "util";
 
 export interface VersionCategory {
   type: "version";
+  link: string | undefined;
 }
 
 export interface ExternalLinkCategory {
@@ -45,7 +46,6 @@ interface RootDocConfigInput {
   favicon?: {
     srcPath: string;
   };
-  otherVersionsLink?: string;
   linksLeft?: unknown[];
   linksRight?: unknown[];
 }
@@ -71,12 +71,6 @@ export interface LogoInformation {
   srcPath?: string | undefined;
 }
 
-export interface VersionInformation {
-  version: string;
-  /** Optional link to redirect to when clicking on the version. */
-  link?: string | undefined;
-}
-
 export type LinkCategory =
   | VersionCategory
   | ExternalLinkCategory
@@ -85,7 +79,6 @@ export type LinkCategory =
   | LocalDocCategory;
 
 export interface ParsedDocConfig {
-  versionInfo: undefined | VersionInformation;
   logo: undefined | LogoInformation;
   favicon:
     | undefined
@@ -99,24 +92,15 @@ export interface ParsedDocConfig {
 export default async function parseDocConfigs(
   baseInDir: string,
   baseOutDir: string,
-  version: string | undefined
 ): Promise<ParsedDocConfig> {
   const rootConfigFileName = path.join(baseInDir, ".docConfig.json");
   const rootConfig = await parseAndCheckRootConfigFile(rootConfigFileName);
   const ret: ParsedDocConfig = {
-    versionInfo: undefined,
     logo: undefined,
     favicon: undefined,
     links: [],
     linksRightIndex: -1,
   };
-
-  if (typeof version === "string") {
-    ret.versionInfo = { version, link: undefined };
-    if (typeof rootConfig.otherVersionsLink === "string") {
-      ret.versionInfo.link = rootConfig.otherVersionsLink;
-    }
-  }
 
   if (typeof rootConfig.logo === "object") {
     ret.logo = rootConfig.logo;
@@ -140,18 +124,18 @@ export default async function parseDocConfigs(
         throw new Error(`Invalid element in \`linksLeft\` at index ${i}`);
       } else {
         throw new Error(
-          `Invalid element in \`linksRight\` at index ${i - linksLeft.length}`
+          `Invalid element in \`linksRight\` at index ${i - linksLeft.length}`,
         );
       }
     }
     if (!("type" in category) || typeof category.type !== "string") {
       if (i < linksLeft.length) {
         throw new Error(
-          `Element in \`linksLeft\` at index ${i} is missing its \`type\` property`
+          `Element in \`linksLeft\` at index ${i} is missing its \`type\` property`,
         );
       } else {
         throw new Error(
-          `Element in \`linksRight\` at index ${i - linksLeft.length} is missing its \`type\` property`
+          `Element in \`linksRight\` at index ${i - linksLeft.length} is missing its \`type\` property`,
         );
       }
     }
@@ -161,7 +145,7 @@ export default async function parseDocConfigs(
       case "local-doc":
         if (!("path" in category) || typeof category.path !== "string") {
           throw new Error(
-            `A "local-doc" element is missing its "path" property.`
+            `A "local-doc" element is missing its "path" property.`,
           );
         }
         if (
@@ -169,17 +153,27 @@ export default async function parseDocConfigs(
           typeof category.displayName !== "string"
         ) {
           throw new Error(
-            `A "local-doc" element is missing its "path" property.`
+            `A "local-doc" element is missing its "path" property.`,
           );
         }
         parsedCategory = await parseLocalDocCategory(
           { displayName: category.displayName, path: category.path },
           baseInDir,
-          baseOutDir
+          baseOutDir,
         );
         break;
       case "version":
-        parsedCategory = { type: "version" };
+        let link;
+        if ("link" in category) {
+          if (typeof category.link !== "string") {
+            throw new Error(
+              `A version" element has a "link" property in the wrong format.` +
+                " Should be a string.",
+            );
+          }
+          link = category.link;
+        }
+        parsedCategory = { type: "version", link };
         break;
       case "link":
         if (!("link" in category) || typeof category.link !== "string") {
@@ -200,7 +194,7 @@ export default async function parseDocConfigs(
       case "github-link":
         if (!("link" in category) || typeof category.link !== "string") {
           throw new Error(
-            `A "github-link" element is missing its "link" property.`
+            `A "github-link" element is missing its "link" property.`,
           );
         }
         parsedCategory = {
@@ -222,7 +216,7 @@ export default async function parseDocConfigs(
 async function parseLocalDocCategory(
   category: { displayName: string; path: string },
   baseInDir: string,
-  baseOutDir: string
+  baseOutDir: string,
 ): Promise<LocalDocCategory> {
   const categoryPath = path.join(baseInDir, category.path);
   const categoryOutPath = path.join(baseOutDir, category.path);
@@ -260,7 +254,7 @@ async function parseLocalDocCategory(
         const subPageOutPath = path.join(
           categoryOutPath,
           page.path,
-          subPage.path
+          subPage.path,
         );
         let subPageState;
         try {
@@ -275,12 +269,12 @@ async function parseLocalDocCategory(
           throw new Error(
             'Category page depth cannot exceed 2 yet "' +
               subPagePath +
-              '" is a directory.'
+              '" is a directory.',
           );
         }
         const outputFile = path.join(
           path.dirname(subPageOutPath),
-          path.basename(subPagePath, ".md") + ".html"
+          path.basename(subPagePath, ".md") + ".html",
         );
         if (parsedPage.pages === undefined) {
           parsedPage.pages = [];
@@ -295,7 +289,7 @@ async function parseLocalDocCategory(
     } else if (pageStat.isFile()) {
       const outputFile = path.join(
         categoryOutPath,
-        path.basename(pagePath, ".md") + ".html"
+        path.basename(pagePath, ".md") + ".html",
       );
       parsedCategory.pages.push({
         isPageGroup: false,
@@ -328,7 +322,7 @@ async function parseLocalDocCategory(
  * @returns {Promise.<Object>}
  */
 async function parseAndCheckRootConfigFile(
-  rootConfigFileName: string
+  rootConfigFileName: string,
 ): Promise<RootDocConfigInput> {
   let configStr;
   try {
@@ -340,7 +334,7 @@ async function parseAndCheckRootConfigFile(
       'Impossible to read Root .docConfig.json file ("' +
         rootConfigFileName +
         '"): ' +
-        srcMessage
+        srcMessage,
     );
   }
 
@@ -360,7 +354,7 @@ async function parseAndCheckRootConfigFile(
   if ("logo" in config) {
     if (typeof config.logo !== "object" || config.logo === null) {
       exitWithInvalidRootConfig(
-        `The "logo" property, if defined, should contain an object.`
+        `The "logo" property, if defined, should contain an object.`,
       );
     }
 
@@ -370,13 +364,13 @@ async function parseAndCheckRootConfigFile(
     ) {
       exitWithInvalidRootConfig(
         `The "logo" property, if defined, should contain a "srcPath" ` +
-          "property set as a string."
+          "property set as a string.",
       );
     }
 
     if ("link" in config.logo && typeof config.logo.link !== "string") {
       exitWithInvalidRootConfig(
-        `The "logo.link" property, if defined, should be set as a string.`
+        `The "logo.link" property, if defined, should be set as a string.`,
       );
     }
   }
@@ -384,7 +378,7 @@ async function parseAndCheckRootConfigFile(
   if ("favicon" in config) {
     if (typeof config.favicon !== "object" || config.favicon === null) {
       exitWithInvalidRootConfig(
-        `The "favicon" property, if defined, should contain an object.`
+        `The "favicon" property, if defined, should contain an object.`,
       );
     }
     if (
@@ -393,29 +387,20 @@ async function parseAndCheckRootConfigFile(
     ) {
       exitWithInvalidRootConfig(
         `The "favicon" property, if defined, should contain a "srcPath" ` +
-          "property set as a string."
+          "property set as a string.",
       );
     }
   }
 
-  if (
-    "otherVersionsLink" in config &&
-    typeof config.otherVersionsLink !== "string"
-  ) {
-    exitWithInvalidRootConfig(
-      `The "otherVersionsLink" property, if defined, should be set as a string.`
-    );
-  }
-
   if ("linksLeft" in config && !Array.isArray(config.linksLeft)) {
     exitWithInvalidRootConfig(
-      `The "linksLeft" property, if defined, should be set as an Array.`
+      `The "linksLeft" property, if defined, should be set as an Array.`,
     );
   }
 
   if ("linksRight" in config && !Array.isArray(config.linksRight)) {
     exitWithInvalidRootConfig(
-      `The "linksRight" property, if defined, should be set as an Array.`
+      `The "linksRight" property, if defined, should be set as an Array.`,
     );
   }
 
@@ -423,7 +408,7 @@ async function parseAndCheckRootConfigFile(
 
   function exitWithInvalidRootConfig(reason: string): never {
     throw new Error(
-      `Root .docConfig.json file ("${rootConfigFileName}") is invalid: ${reason}`
+      `Root .docConfig.json file ("${rootConfigFileName}") is invalid: ${reason}`,
     );
   }
 }
@@ -433,7 +418,7 @@ async function parseAndCheckRootConfigFile(
  * @returns {Promise.<Object>}
  */
 async function parseAndCheckSubConfigFile(
-  filename: string
+  filename: string,
 ): Promise<InnerDocConfigInput> {
   let configStr;
   try {
@@ -442,7 +427,7 @@ async function parseAndCheckSubConfigFile(
     const srcMessage =
       ((err as { message: string }) ?? {}).message ?? "Unknown error";
     throw new Error(
-      `Impossible to read "${filename}" config file: ${srcMessage}`
+      `Impossible to read "${filename}" config file: ${srcMessage}`,
     );
   }
 
@@ -458,7 +443,7 @@ async function parseAndCheckSubConfigFile(
   if (typeof config !== "object" || config === null) {
     throw new Error(
       `"${filename}" config file is invalid: ` +
-        `Should be under an object form.`
+        `Should be under an object form.`,
     );
   }
 
@@ -469,7 +454,7 @@ async function parseAndCheckSubConfigFile(
   ) {
     throw new Error(
       `"${filename}" config file is invalid: ` +
-        `Should have a "pages" property with at least one entry.`
+        `Should have a "pages" property with at least one entry.`,
     );
   }
 
@@ -480,14 +465,14 @@ async function parseAndCheckSubConfigFile(
       throw new Error(
         `"${filename}" config file is invalid: ` +
           `One of the element in "pages" has an invalid format ` +
-          "(should be an object)."
+          "(should be an object).",
       );
     }
     if (!("path" in page) || typeof page.path !== "string") {
       throw new Error(
         `"${filename}" config file is invalid: ` +
           `One of the element in "pages" has an invalid "path" property ` +
-          "(should be a string)."
+          "(should be a string).",
       );
     }
 
@@ -495,7 +480,7 @@ async function parseAndCheckSubConfigFile(
       throw new Error(
         `"${filename}" config file is invalid: ` +
           `One of the element in "pages" has an invalid "displayName" property ` +
-          "(should be a string)."
+          "(should be a string).",
       );
     }
 
@@ -508,7 +493,7 @@ async function parseAndCheckSubConfigFile(
         throw new Error(
           `"${filename}" config file is invalid: ` +
             `One of the element in "pages" has an invalid "defaultOpen" property ` +
-            "(should be a boolean or not defined)."
+            "(should be a boolean or not defined).",
         );
       }
       pushedPage.defaultOpen = page.defaultOpen;

@@ -1,10 +1,6 @@
 import * as path from "path";
 import { encode } from "html-entities";
-import type {
-  LogoInformation,
-  ParsedDocConfig,
-  VersionInformation,
-} from "./parse_doc_configs.js";
+import type { LogoInformation, ParsedDocConfig } from "./parse_doc_configs.js";
 import { toUriCompatibleRelativePath, getGithubSvg } from "./utils.js";
 
 /**
@@ -21,8 +17,9 @@ export default function generateHeaderHtml(
   currentLinkIdx: number,
   currentPath: string,
   logoInfo: LogoInformation | null,
+  version: string | undefined,
 ): string {
-  const { versionInfo, links, linksRightIndex } = config;
+  const { links, linksRightIndex } = config;
   const hamburgerHtml = constructHamburgerMenuHtmlInHeaderBar();
   const logoHtml = constructLogoHtmlInHeaderBar(logoInfo);
   const currentDir = path.dirname(currentPath);
@@ -63,7 +60,11 @@ export default function generateHeaderHtml(
         case "search":
           return constructSearchHtmlInHeaderBar(customClass);
         case "version":
-          return constructVersionLinkHtmlInHeaderBar(versionInfo, customClass);
+          return constructVersionLinkHtmlInHeaderBar(
+            version,
+            l.link ?? null,
+            customClass,
+          );
       }
     })
     .join("\n");
@@ -91,29 +92,25 @@ function constructHamburgerMenuHtmlInHeaderBar(): string {
 /**
  * Returns the HTML string corresponding to the current version number, if
  * available, and with the corresponding link, also if available.
- * @param {Object|null|undefined} versionInfo
+ * @param {string|undefined} version
+ * @param {string|undefined} link
  * @param {string} customClass
  * @returns {string}
  */
 function constructVersionLinkHtmlInHeaderBar(
-  versionInfo: VersionInformation | null | undefined,
+  version: string | undefined,
+  link: string | null,
   customClass: string,
 ): string {
-  if (
-    versionInfo === undefined ||
-    versionInfo === null ||
-    typeof versionInfo.version !== "string"
-  ) {
+  if (typeof version !== "string") {
     return "";
   }
   let element = "";
   let hasLink = false;
-  const { version } = versionInfo;
-  if (typeof versionInfo.link === "string") {
+  if (typeof link === "string") {
     hasLink = true;
     element +=
-      `<a class="navbar-item${customClass}"` +
-      `href="${encode(versionInfo.link)}">`;
+      `<a class="navbar-item${customClass}"` + `href="${encode(link)}">`;
   } else {
     element += `<span class="navbar-item${customClass}">`;
   }

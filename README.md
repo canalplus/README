@@ -91,11 +91,6 @@ a `.docConfig.json` JSON file at its root with the following format:
     "srcPath": "./images/favicon.ico"
   },
 
-  // Optional link when clicking on the current version which is optionally
-  // displayed on the page (see below)
-  // Can be ignored in which case the version is not clickable
-  "otherVersionsLink": "https://example.com/documentation_pages_by_version.html",
-
   // Links available at the top of the page, on the left-side of it from left to
   // right.
   //
@@ -152,8 +147,12 @@ a `.docConfig.json` JSON file at its root with the following format:
     {
       // Special type which displays the current project's version.
       // It is optionally clickable depending on if you defined the
-      // `otherVersionsLink` property
+      // `link` property
       "type": "version"
+
+      // Optional link when clicking on the version in the page
+      // Can be ignored in which case the version is not clickable
+      "link": "https://example.com/documentation_pages_by_version.html",
     }
   ]
 }

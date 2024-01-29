@@ -16,10 +16,10 @@ if (wasCalledAsScript()) {
           ((err as { message: string }) ?? {}).message ?? "Unknown error";
         // eslint-disable-next-line no-console
         console.error(
-          "ERROR: failed to generated documentation: " + srcMessage
+          "ERROR: failed to generated documentation: " + srcMessage,
         );
         process.exit(1);
-      }
+      },
     );
   }
   main();
@@ -125,7 +125,7 @@ function processArgs(): {
     console.error(
       "Error: The documentation generator needs at least " +
         "the input directory (behind an `-i` flag) and the output directory" +
-        " (behind an `-o` flag) but at least one of them was missing."
+        " (behind an `-o` flag) but at least one of them was missing.",
     );
     process.exit(1);
   }
@@ -155,7 +155,7 @@ Options:
   -i, --input              [Mandatory] Root directory where your documentation source files are.
   -o, --output             [Mandatory] Destination directory where your HTML documentation will be created.
   -c, --clean              [Optional, Recommended] Remove output directory if it already exists
-  -p, --project-version    [Optional, Recommended] Indicate your current project's version`
+  -p, --project-version    [Optional, Recommended] Indicate your current project's version`,
     /* eslint-enable indent */
   );
   /* eslint-enable no-console */

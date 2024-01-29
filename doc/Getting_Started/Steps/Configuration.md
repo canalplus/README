@@ -6,13 +6,13 @@ Now that you know [how to write your documentation files](./Documentation_Files.
 and chose a root directory where to put them, you'll need to indicate to README
 how you want your documentation to be generated:
 
--   To indicate how your documentation is divided. For example you might have a
-    "Getting Started", a "Tutorial", an "API" and/or a "Reference" that you want
-    to keep separated on the produced documentation.
+- To indicate how your documentation is divided. For example you might have a
+  "Getting Started", a "Tutorial", an "API" and/or a "Reference" that you want
+  to keep separated on the produced documentation.
 
--   To add external links, such as to your repository, to your demo or to a blog
+- To add external links, such as to your repository, to your demo or to a blog
 
--   To display a logo for your project, add a favicon etc.
+- To display a logo for your project, add a favicon etc.
 
 All of this is done with a `.docConfig.json` file to put at your project
 documentation's root directory.
@@ -45,11 +45,6 @@ properties indicated as "optional" can be omitted:
     // favicon
     "srcPath": "./images/favicon.ico"
   },
-
-  // Optional link when clicking on the current version which is optionally
-  // displayed on the page (see below)
-  // Can be ignored in which case the version is not clickable
-  "otherVersionsLink": "https://example.com/documentation_pages_by_version.html",
 
   // Links available at the top of the page, on the left-side of it from left to
   // right.
@@ -107,8 +102,12 @@ properties indicated as "optional" can be omitted:
     {
       // Special type which displays the current project's version.
       // It is optionally clickable depending on if you defined the
-      // `otherVersionsLink` property
+      // `link` property
       "type": "version"
+
+      // Optional link when clicking on the version in the page
+      // Can be ignored in which case the version is not clickable
+      "link": "https://example.com/documentation_pages_by_version.html",
     }
   ]
 }
