@@ -9,7 +9,8 @@
   "main": "build/index.js",
   "scripts": {
     "build": "npm run generateVersionFile && tsc",
-    "doc": "node build/index.js -i doc -o doc-build -p `npm run --silent getVersion`",
+    "clean": "rimraf doc-build",
+    "doc": "node build/index.js --clean --input doc --output doc-build -p `npm run --silent getVersion`",
     "generateVersionFile": "echo \"export default \\\"$(npm --silent run getVersion)\\\";\" > src/version.ts",
     "getVersion": "node -e \"console.log(require('./package.json').version)\"",
     "lint": "eslint src/**",
@@ -25,7 +26,8 @@
     "cheerio": "1.0.0-rc.12",
     "highlight.js": "11.9.0",
     "html-entities": "2.4.0",
-    "markdown-it": "14.0.0"
+    "markdown-it": "14.0.0",
+    "rimraf": "^5.0.5"
   },
   "devDependencies": {
     "@types/markdown-it": "^13.0.7",

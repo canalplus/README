@@ -42,6 +42,7 @@ function processArgs(): {
   let outDir;
   let version: string | undefined;
 
+  let shouldClean = false;
   let currentFlag: "input" | "output" | "project-version" | undefined;
   for (let i = 2; i < process.argv.length; i++) {
     const arg = process.argv[i];
@@ -60,6 +61,9 @@ function processArgs(): {
             break;
           case "project-version":
             currentFlag = "project-version";
+            break;
+          case "clean":
+            shouldClean = true;
             break;
           case "help":
             displayHelp();
@@ -83,6 +87,9 @@ function processArgs(): {
             break;
           case "p":
             currentFlag = "project-version";
+            break;
+          case "c":
+            shouldClean = true;
             break;
           case "h":
             displayHelp();
@@ -128,6 +135,7 @@ function processArgs(): {
     baseOutDir: outDir,
     options: {
       version,
+      clean: shouldClean,
     },
   };
 }
@@ -146,7 +154,8 @@ Options:
   -v, --version            Display the current version of README
   -i, --input              [Mandatory] Root directory where your documentation source files are.
   -o, --output             [Mandatory] Destination directory where your HTML documentation will be created.
-  -p, --project-version    [Optional] Indicate your current project's version`
+  -c, --clean              [Optional, Recommended] Remove output directory if it already exists
+  -p, --project-version    [Optional, Recommended] Indicate your current project's version`
     /* eslint-enable indent */
   );
   /* eslint-enable no-console */

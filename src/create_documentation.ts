@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
+import { rimrafSync } from "rimraf";
 import createDocumentationPage from "./create_documentation_page.js";
 import generateHeaderHtml from "./generate_header_html.js";
 import generatePageListHtml from "./generate_page_list_html.js";
@@ -31,6 +32,7 @@ async function createDirIfDoesntExist(dir: string) {
 }
 
 export interface DocumentationCreationOptions {
+  clean?: boolean;
   css?: string[];
   version?: string | undefined;
   getPageTitle?: (mdTitle: string) => string;
@@ -58,6 +60,10 @@ export default async function createDocumentation(
   baseOutDir: string,
   options: DocumentationCreationOptions = {}
 ): Promise<void> {
+  if (options.clean === true) {
+    rimrafSync(baseOutDir);
+  }
+
   let cssOutputPaths: string[] = [];
 
   {
