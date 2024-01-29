@@ -1,6 +1,8 @@
 import hljs from "highlight.js";
 import MarkdownIt from "markdown-it";
 
+// We just rely on the `markdown-it` dependency to create an HTML rendition of
+// your Markdown file.
 const md = MarkdownIt({
   highlight(str: string, lang: string): string {
     if (lang && hljs.getLanguage(lang)) {
@@ -13,9 +15,8 @@ const md = MarkdownIt({
     return "";
   },
   html: true,
-  linkify: true,
+  // XXX TODO remove?
   typographer: true,
-  xhtmlOut: true,
 });
 
 /**
