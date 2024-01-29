@@ -119,7 +119,7 @@ function initializePage() {
 
   // Work-arounds to make sure the header doesn't go on top
   // of a link
-  if (window.location.hash !== "") {
+  if (window.location.hash !== "" && window.scrollY > 0) {
     hideHeader();
   }
 
@@ -170,7 +170,9 @@ function initializeScrollBehavior() {
   }
 
   function onHashChange() {
-    hideHeader();
+    if (window.scrollY !== 0) {
+      hideHeader();
+    }
     prevScroll = window.scrollY;
   }
 }
