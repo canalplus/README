@@ -85,7 +85,7 @@ export default async function createDocumentationPage({
 }): Promise<void> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
-    path.dirname(outputFile),
+    path.dirname(outputFile)
   );
   const outputUrlFromRoot = toUriCompatibleRelativePath(outputFile, baseOutDir);
 
@@ -104,7 +104,7 @@ export default async function createDocumentationPage({
     html: resHtml,
     tocMd,
     nbTocElements,
-  } = await parseMD(data, inputDir, outputDir, linkTranslator);
+  } = await parseMD(data, inputDir, outputDir, baseOutDir, linkTranslator);
   const searchData = getSearchDataForContent(resHtml);
   searchIndex.push({
     file: outputUrlFromRoot,
@@ -141,17 +141,26 @@ async function copyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
   outputDir: string,
+  baseOutDir: string
 ): Promise<void> {
   const src = mediaTag.attr("src");
   if (src === null || src === undefined || src === "") {
     return;
   }
 
-  // TODO should we check that the resource is inside the documentation root's
-  // directory to protect the user?
   const inputFile = path.join(inputDir, src);
   const outputFile = path.join(outputDir, src);
   const outDir = path.dirname(outputFile);
+
+  const relativeDir = path.relative(baseOutDir, outDir);
+  const isSubdir = !relativeDir.startsWith("..");
+  if (!isSubdir) {
+    throw new Error(
+      "You're trying to copy a media asset outside of your root directory (" +
+        src +
+        "). This is for forbidden for now."
+    );
+  }
 
   // TODO check if already done in the current invokation
 
@@ -176,7 +185,7 @@ function constructNextPreviousPage(
   nextPageInfo: {
     link: string;
     name: string;
-  } | null,
+  } | null
 ): string {
   if (prevPageInfo === null && nextPageInfo === null) {
     return "";
@@ -196,7 +205,7 @@ function constructNextPreviousPage(
       link: string;
       name: string;
     } | null,
-    isNext: boolean,
+    isNext: boolean
   ): string {
     const base = `<div class="next-or-previous-page${
       isNext ? " next-page" : ""
@@ -233,7 +242,8 @@ async function parseMD(
   data: string,
   inputDir: string,
   outputDir: string,
-  linkTranslator: ((link: string) => string | undefined) | null | undefined,
+  baseOutDir: string,
+  linkTranslator: ((link: string) => string | undefined) | null | undefined
 ): Promise<{
   /** HTML output */
   html: string;
@@ -260,15 +270,15 @@ async function parseMD(
 
   const imgTags = $("img").toArray();
   for (let i = 0; i < imgTags.length; i++) {
-    await copyMediaAsset($(imgTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(imgTags[i]), inputDir, outputDir, baseOutDir);
   }
   const audioTags = $("audio").toArray();
   for (let i = 0; i < audioTags.length; i++) {
-    await copyMediaAsset($(audioTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(audioTags[i]), inputDir, outputDir, baseOutDir);
   }
   const videoTags = $("video").toArray();
   for (let i = 0; i < videoTags.length; i++) {
-    await copyMediaAsset($(videoTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(videoTags[i]), inputDir, outputDir, baseOutDir);
   }
 
   // Generate headers anchor links, just before headers are declared.
@@ -303,7 +313,7 @@ async function parseMD(
         .trim()
         .toLowerCase()
         .replace(/ /g, "-")
-        .replace(BLACKLIST_ANCHOR, ""),
+        .replace(BLACKLIST_ANCHOR, "")
     );
     if (generatedAnchors[baseUri] !== true) {
       generatedAnchors[baseUri] = true;
