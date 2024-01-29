@@ -8,8 +8,9 @@
   },
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
-    "doc": "node build/index.js doc doc-build `npm run getVersion`",
+    "build": "npm run generateVersionFile && tsc",
+    "doc": "node build/index.js -i doc -o doc-build -p `npm run --silent getVersion`",
+    "generateVersionFile": "echo \"export default \\\"$(npm --silent run getVersion)\\\";\" > src/version.ts",
     "getVersion": "node -e \"console.log(require('./package.json').version)\"",
     "fmt": "prettier src/* --write src"
   },

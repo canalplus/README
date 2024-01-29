@@ -33,7 +33,7 @@ async function createDirIfDoesntExist(dir: string) {
 
 export interface DocumentationCreationOptions {
   css?: string[];
-  version?: string;
+  version?: string | undefined;
   getPageTitle?: (mdTitle: string) => string;
 }
 

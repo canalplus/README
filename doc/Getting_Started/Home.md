@@ -38,11 +38,19 @@ yarn add @canalplus/readme.doc --dev
 ```
 
 You should then be able to run it by referencing through its `readme.doc` name
-in a `package.json` script or through `npx`:
+in a `package.json` script or through `npx`.
+
+To ensure the `readme.doc` is accessible, you can try running it with the `-v`
+flag and see if the right version is outputed:
 
 ```sh
-# Output version
-npx readme.doc -v
+# Outputs README version
+npx --no -- readme.doc -v
+
+# Note: The `--no --` part in that npx command is there to ensure that README
+# has been installed locally with success.
+# If you see the expected version outputed, it is correctly installed and
+# it is equivalent to just calling `npx readme.doc -v`.
 ```
 
 ## Usage
