@@ -164,6 +164,7 @@ table tr td {
   display: flex;
   /* overflow: hidden; */
   max-width: 1650px;
+  margin: auto;
 }
 
 .loading-wrapper {
@@ -295,6 +296,9 @@ table tr td {
 .navbar-items .version-item {
   font-style: italic;
   font-size: 0.94rem;
+}
+
+a .version-item {
   text-decoration: underline;
 }
 
@@ -410,7 +414,9 @@ a.navbar-active {
 
 .content {
   margin: 25px 15px;
-  max-width: 920px;
+  /* max-width: 920px; */
+  width: 100%;
+  min-width: 350px;
 }
 
 .content img {
