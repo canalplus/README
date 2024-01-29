@@ -122,7 +122,7 @@ export default async function createDocumentationPage({
   }
 }
 
-async function updateMediaTag(
+async function copyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
   outputDir: string
@@ -226,25 +226,11 @@ async function parseMD(
   /** Number of elements in the table of content. */
   nbTocElements: number;
 }> {
-  // TODO I don't understand Cheerio/Jquery here, that's plain ugly
-  // use markdown-it plugin instead?
   const $ = load(convertMDToHTML(data));
   const generatedAnchors: Partial<Record<string, true>> = {};
   const tocLines: string[] = [];
 
-  const hLinks =$("h1, h2, h3").toArray();
-  for (let i = 0; i < hLinks.length; i++) {
-    const linkElt = hLinks[i];
-    const linkText = $(linkElt).text();
-    let uri = generateAnchorName(linkText);
-    const tagName = hLinks[i].tagName.toLowerCase();
-    const prefix =  tagName === "h1" ? "" :
-                    tagName === "h2" ? "  - " :
-                                       "    - ";
-    tocLines.push(`${prefix}[${linkText}](#${uri})`);
-    $(`<a name="${uri}"></a>`).insertBefore(linkElt);
-  }
-
+  // Go through link translator for every links originally in the file
   if (linkTranslator) {
     $("a").each((_, elem) => {
       const href = $(elem).attr("href");
@@ -254,18 +240,34 @@ async function parseMD(
     });
   }
 
+  // Copy linked image, audio and video assets into output directory
+
   const imgTags = $("img").toArray();
   for (let i = 0; i < imgTags.length; i++) {
-    await updateMediaTag($(imgTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(imgTags[i]), inputDir, outputDir);
   }
   const audioTags = $("audio").toArray();
   for (let i = 0; i < audioTags.length; i++) {
-    await updateMediaTag($(audioTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(audioTags[i]), inputDir, outputDir);
   }
   const videoTags = $("video").toArray();
   for (let i = 0; i < videoTags.length; i++) {
-    await updateMediaTag($(videoTags[i]), inputDir, outputDir);
+    await copyMediaAsset($(videoTags[i]), inputDir, outputDir);
   }
+
+  // Generate headers anchor links, just before headers are declared.
+
+  const hLinks = $("h1, h2, h3").toArray();
+  for (let i = 0; i < hLinks.length; i++) {
+    const linkElt = hLinks[i];
+    const linkText = $(linkElt).text();
+    let uri = generateAnchorName(linkText);
+    const tagName = hLinks[i].tagName.toLowerCase();
+    const prefix = tagName === "h1" ? "" : tagName === "h2" ? "  - " : "    - ";
+    tocLines.push(`${prefix}[${linkText}](#${uri})`);
+    $(`<a name="${uri}"></a>`).insertBefore(linkElt);
+  }
+
   return {
     html: $.html(),
     tocMd: tocLines.join("\n"),
