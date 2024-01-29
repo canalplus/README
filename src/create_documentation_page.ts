@@ -7,6 +7,7 @@ import convertMDToHTML from "./convert_MD_to_HMTL.js";
 import generatePageHtml from "./generate_page_html.js";
 import type { FileSearchIndex } from "./get_search_data_for_content.js";
 import getSearchDataForContent from "./get_search_data_for_content.js";
+import log from "./log.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 /**
@@ -108,8 +109,8 @@ export default async function createDocumentationPage({
   try {
     data = await promisify(fs.readFile)(inputFile, "utf8");
   } catch (err) {
-    /* eslint-disable-next-line no-console */
-    console.error("error reading file:", err);
+    const errorStr = err instanceof Error ? String(err) : "Unknown Error";
+    log("WARNING", "error reading file: " + errorStr);
     return { anchors: [] };
   }
   const inputDir = path.dirname(inputFile);
@@ -144,9 +145,8 @@ export default async function createDocumentationPage({
   try {
     await promisify(fs.writeFile)(outputFile, html);
   } catch (err) {
-    /* eslint-disable no-console */
-    console.error("error writing file:", err);
-    /* eslint-enable no-console */
+    const errorStr = err instanceof Error ? String(err) : "Unknown Error";
+    log("WARNING", "Error writing file: " + errorStr);
     return { anchors: [] };
   }
   return { anchors };

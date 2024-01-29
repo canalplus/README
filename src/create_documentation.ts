@@ -9,6 +9,7 @@ import generateHeaderHtml from "./generate_header_html.js";
 import generatePageListHtml from "./generate_page_list_html.js";
 import generateSidebarHtml from "./generate_sidebar_html.js";
 import type { FileSearchIndex } from "./get_search_data_for_content.js";
+import log from "./log.js";
 import parseDocConfigs from "./parse_doc_configs.js";
 import type {
   ParsedDocConfig,
@@ -230,7 +231,7 @@ export default async function createDocumentation(
   if (anchorChecks.length > 0) {
     for (const check of anchorChecks) {
       if (check.validity === AnchorValidity.AnchorNotFound) {
-        let warning = `WARNING: A referenced anchor link was not found.
+        let message = `A referenced anchor link was not found.
   File with link: ${check.inputFileWithLink}
   Linked file:    ${check.inputFileLinkDestination}
   Anchor:         ${check.anchor}
@@ -239,13 +240,10 @@ export default async function createDocumentation(
           check.inputFileLinkDestination
         );
         if (availableAnchors !== undefined && availableAnchors.length > 0) {
-          warning +=
-            "  Available Anchors: " +
-            availableAnchors.join(", ") +
-            "\n";
+          message +=
+            "  Available Anchors: " + availableAnchors.join(", ") + "\n";
         }
-        // eslint-disable-next-line no-console
-        console.warn(warning);
+        log("WARNING", message);
       }
     }
   }
@@ -259,8 +257,7 @@ export default async function createDocumentation(
   } catch (err) {
     const srcMessage =
       ((err as { message: string }) ?? {}).message ?? "Unknown error";
-    // eslint-disable-next-line no-console
-    console.error(`Error: Could not create search index file: ${srcMessage}`);
+    log("WARNING", `Could not create search index file: ${srcMessage}`);
   }
 }
 
@@ -441,9 +438,9 @@ function linkTranslatorFactory(
 
     const translation = fileDict[normalizedLink];
     if (translation === undefined) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `WARNING: A referenced link was not found.
+      log(
+        "WARNING",
+        `A referenced link was not found.
   File: ${inputFile}
   Link: ${link}
 `

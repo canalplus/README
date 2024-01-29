@@ -5,6 +5,7 @@ import * as process from "process";
 import { pathToFileURL } from "url";
 import type { DocumentationCreationOptions } from "./create_documentation.js";
 import createDocumentation from "./create_documentation.js";
+import log from "./log.js";
 import currentReadmeVersion from "./version.js";
 
 if (wasCalledAsScript()) {
@@ -14,12 +15,9 @@ if (wasCalledAsScript()) {
       (err) => {
         const srcMessage =
           ((err as { message: string }) ?? {}).message ?? "Unknown error";
-        // eslint-disable-next-line no-console
-        console.error(
-          "ERROR: failed to generated documentation: " + srcMessage,
-        );
+        log("ERROR", "Failed to generated documentation: " + srcMessage);
         process.exit(1);
-      },
+      }
     );
   }
   main();
@@ -50,8 +48,7 @@ function processArgs(): {
       if (arg[1] === "-") {
         switch (arg.substring(2).trim()) {
           case "version":
-            /* eslint-disable-next-line no-console */
-            console.log(`v${currentReadmeVersion}`);
+            log("LOG", `v${currentReadmeVersion}`);
             process.exit(0);
           case "input":
             currentFlag = "input";
@@ -69,15 +66,13 @@ function processArgs(): {
             displayHelp();
             process.exit(0);
           default:
-            /* eslint-disable-next-line no-console */
-            console.error(`Error: Unrecognized flag: ${arg}`);
+            log("ERROR", `Unrecognized flag: ${arg}`);
             process.exit(1);
         }
       } else {
         switch (arg.substring(1).trim()) {
           case "v":
-            /* eslint-disable-next-line no-console */
-            console.log(`v${currentReadmeVersion}`);
+            log("LOG", `v${currentReadmeVersion}`);
             process.exit(0);
           case "i":
             currentFlag = "input";
@@ -95,8 +90,7 @@ function processArgs(): {
             displayHelp();
             process.exit(0);
           default:
-            /* eslint-disable-next-line no-console */
-            console.error(`Error: Unrecognized flag: ${arg}`);
+            log("ERROR", `Unrecognized flag: ${arg}`);
             process.exit(1);
         }
       }
@@ -114,18 +108,17 @@ function processArgs(): {
       }
       currentFlag = undefined;
     } else {
-      /* eslint-disable-next-line no-console */
-      console.error(`Error: unexpected token in command: ${arg}`);
+      log("ERROR", `Unexpected token in command: ${arg}`);
       process.exit(1);
     }
   }
 
   if (inDir === undefined || outDir === undefined) {
-    /* eslint-disable-next-line no-console */
-    console.error(
-      "Error: The documentation generator needs at least " +
+    log(
+      "ERROR",
+      "The documentation generator needs at least " +
         "the input directory (behind an `-i` flag) and the output directory" +
-        " (behind an `-o` flag) but at least one of them was missing.",
+        " (behind an `-o` flag) but at least one of them was missing."
     );
     process.exit(1);
   }
@@ -145,8 +138,8 @@ function processArgs(): {
  * script.
  */
 function displayHelp() {
-  /* eslint-disable no-console */
-  console.log(
+  log(
+    "LOG",
     /* eslint-disable indent */
     `Usage: node readme.doc [options]
 Options:
@@ -155,8 +148,7 @@ Options:
   -i, --input              [Mandatory] Root directory where your documentation source files are.
   -o, --output             [Mandatory] Destination directory where your HTML documentation will be created.
   -c, --clean              [Optional, Recommended] Remove output directory if it already exists
-  -p, --project-version    [Optional, Recommended] Indicate your current project's version`,
+  -p, --project-version    [Optional, Recommended] Indicate your current project's version`
     /* eslint-enable indent */
   );
-  /* eslint-enable no-console */
 }
