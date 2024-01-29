@@ -20,12 +20,12 @@ There is two mandatory options:
 - `--input [input]` (or `-i [input]`), with `[input]` being the root directory
   where your documentation (in Markdown) resides.
 
-- `--output [output]` (or `-o [output]`), with `[output]` being the
-  destination directory where HTML files will be generated.
+- `--output [output]` (or `-o [output]`), with `[output]` being the destination
+  directory where HTML files will be generated.
 
   Note that the output directory can be inside the input directory. It's for
-  example a frequent usage to set a `doc` input directory and a
-  `doc/generated` output directory.
+  example a frequent usage to set a `doc` input directory and a `doc/generated`
+  output directory.
 
 There are also two other heavily recommended options:
 
@@ -34,17 +34,17 @@ There are also two other heavily recommended options:
   Without this option, README will never remove files inside the output
   directory, which mean it could grow indefinitely if you're not careful.
 
-- `--project-version [version]` (or `-p [version]`), with `[version]` being
-  the current version of your project: Allows to indicate in your
-  documentation pages the version they apply to.
+- `--project-version [version]` (or `-p [version]`), with `[version]` being the
+  current version of your project: Allows to indicate in your documentation
+  pages the version they apply to.
 
-  If your project is a JavaScript project with a `package.json` file, you
-  could just rely on the `version` anounced in that file (e.g. by calling
+  If your project is a JavaScript project with a `package.json` file, you could
+  just rely on the `version` anounced in that file (e.g. by calling
   `node -e "console.log(require('./package.json').version)")` to set that
   property.
 
-For example, if your root directory is `doc` and you want to generate your
-HTML documentation in `doc/generated`, you can run:
+For example, if your root directory is `doc` and you want to generate your HTML
+documentation in `doc/generated`, you can run:
 
 ```sh
 readme.doc --clean --input doc --output doc/generated

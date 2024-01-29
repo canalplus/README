@@ -11,8 +11,8 @@ When relying on README, all you need to do is:
    (the full ubiquitous CommonMark syntax is handled, with no added special
    syntax).
 
-   Note that links, including those between Markdown files, are handled, as
-   well as things like embedded image, video and audio resources.
+   Note that links, including those between Markdown files, are handled, as well
+   as things like embedded image, video and audio resources.
 
 2. Put them in directories following a file tree architecture reflecting your
    wanted HTML documentation (categories in different directories, page groups
@@ -62,8 +62,8 @@ each one of them:
 
 1. **Documentation Files**: Write documentation files in Markdown in a file tree
    architecture respecting the same structure you want in your HTML
-   documentation (e.g. `Getting Started` pages in a given directory, `API`
-   pages in another etc.).
+   documentation (e.g. `Getting Started` pages in a given directory, `API` pages
+   in another etc.).
 
 2. **Configuration**: Add a `.docConfig.json` file, setting the documentation's
    global configuration, in your documentation's root directory

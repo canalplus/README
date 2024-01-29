@@ -2,9 +2,10 @@
 
 ## Root configuration overview
 
-Now that you know [how to write your documentation files](./Documentation_Files.md),
-and chose a root directory where to put them, you'll need to indicate to README
-how you want your documentation to be generated:
+Now that you know
+[how to write your documentation files](./Documentation_Files.md), and chose a
+root directory where to put them, you'll need to indicate to README how you want
+your documentation to be generated:
 
 - To indicate how your documentation is divided. For example you might have a
   "Getting Started", a "Tutorial", an "API" and/or a "Reference" that you want

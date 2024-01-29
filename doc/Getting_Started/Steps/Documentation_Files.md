@@ -10,13 +10,14 @@ wanted resulting documentation.
 
 ### CommonMark Markdown
 
-All documentation pages you want to generate HTML pages for have to written
-in the Markdown format (which generally ends with the `.md` extension), more
-specifically respecting the [CommonMark specification](https://spec.commonmark.org/0.30),
-which is its most popular specified implementation.
+All documentation pages you want to generate HTML pages for have to written in
+the Markdown format (which generally ends with the `.md` extension), more
+specifically respecting the
+[CommonMark specification](https://spec.commonmark.org/0.30), which is its most
+popular specified implementation.
 
-If you're not familiar with the Markdown format, you can [follow the CommonMark
-tutorial linked here](https://commonmark.org/help/tutorial/).
+If you're not familiar with the Markdown format, you can
+[follow the CommonMark tutorial linked here](https://commonmark.org/help/tutorial/).
 
 ### About relying on plain Markdown files
 
@@ -26,9 +27,9 @@ also be noted than most forges (GitHub, GitLab, SourceHut, BitBucket etc.)
 provide a very good support of the format natively, making it one of the
 strongest format candidate for developer-oriented documentation files.
 
-Though README generates HTML files, the source Markdown files are also
-intended to be readable as is, by any of those tools, which is why we renounce
-at the idea of adding any specific syntax.
+Though README generates HTML files, the source Markdown files are also intended
+to be readable as is, by any of those tools, which is why we renounce at the
+idea of adding any specific syntax.
 
 Let's consider your projects' developers as an example. They probably will end
 up reading much more often the source Markdown files (e.g. when re-checking some
@@ -40,10 +41,9 @@ browser. And this can be extrapolated to some users as well.
 ### How much information to put in it
 
 Each of the Markdown files you'll write will correspond to a single
-documentation page once transformed by README.
-You should keep that in mind when writing your documentation to get a feeling
-of what information to put in a file and when another file should be created
-instead.
+documentation page once transformed by README. You should keep that in mind when
+writing your documentation to get a feeling of what information to put in a file
+and when another file should be created instead.
 
 For example, this `Documentation Files` documentation page is written in a
 single Markdown source page, here: TODO
@@ -74,8 +74,8 @@ level 3 headers such as `CommonMark Markdown` and `Code blocks`.
 ### Embedded HTML
 
 As permitted by the CommonMark specification, you can embed HTML in your
-documentation pages to have close to endless ways of expressing a layout.
-For example:
+documentation pages to have close to endless ways of expressing a layout. For
+example:
 
 ```html
 <p style="text-align: center; border: 1px dashed #444">
@@ -89,10 +89,10 @@ Will render as:
     Some <i>embedded HTML</i> block
 </p>
 
-The treatment of HTML follows the exact rules of the [CommonMark specification
-on HTML blocks](https://spec.commonmark.org/0.30/#html-blocks) so you should
-rest assured that most other tools (e.g. GitLab, GitHub, Prettier, editor
-extensions...) should have no problem handling them.
+The treatment of HTML follows the exact rules of the
+[CommonMark specification on HTML blocks](https://spec.commonmark.org/0.30/#html-blocks)
+so you should rest assured that most other tools (e.g. GitLab, GitHub, Prettier,
+editor extensions...) should have no problem handling them.
 
 Still, keep in mind that embedded raw HTML blocks are harder to read when the
 original markdown is viewed than the simpler Markdown syntax.
@@ -100,10 +100,12 @@ original markdown is viewed than the simpler Markdown syntax.
 ### Code blocks
 
 Again, code blocks syntax just follows here the CommonMark specification. You
-may already be used to using backticks (\`) for ["code spans"](https://spec.commonmark.org/0.30/#code-span)
-and triple backticks for ["code fences"](https://spec.commonmark.org/0.30/#fenced-code-blocks).
+may already be used to using backticks (\`) for
+["code spans"](https://spec.commonmark.org/0.30/#code-span) and triple backticks
+for ["code fences"](https://spec.commonmark.org/0.30/#fenced-code-blocks).
 
-For example: "\`this\`" will be transformed into "`this`", and that multiline code:
+For example: "\`this\`" will be transformed into "`this`", and that multiline
+code:
 
 <p style="margin-left: 20px">
 ```<br>
@@ -121,9 +123,9 @@ function print() {
 }
 ```
 
-README also includes a syntax highlighter, [highlight.js](https://highlightjs.org/),
-which will automatically hightlight your code based on the language you associated
-to your code fence.
+README also includes a syntax highlighter,
+[highlight.js](https://highlightjs.org/), which will automatically hightlight
+your code based on the language you associated to your code fence.
 
 For example _(notice the `js` mention, which can also be written as `javascript`
 by the way)_:
@@ -185,23 +187,23 @@ simple way:
 
    Will be removed when put as an anchor.
 
-4. All remaining upper-case aphabetical characters (A to Z), is transformed to
-   a lower-case character (a to z).
+4. All remaining upper-case aphabetical characters (A to Z), is transformed to a
+   lower-case character (a to z).
 
 As such, if you want to link to the `Code blocks` chapter of this page, you can
-link to it like this: `[link](#code-blocks)` (we replaced the space by a
-dash character and set the title in lower case).
-Here's the result for this example: [link](#code-blocks)
+link to it like this: `[link](#code-blocks)` (we replaced the space by a dash
+character and set the title in lower case). Here's the result for this example:
+[link](#code-blocks)
 
 To select a more complex example, to link an heading like this:
 `##    Bonne année à tous  `, you would write something like
-`[some link](#bonne-anne--tous)` (The ending space is removed, the middle
-spaces replaced by dashes, the `B` is transformed into lower-case `b` and both
-the `é` an `à` are removed).
+`[some link](#bonne-anne--tous)` (The ending space is removed, the middle spaces
+replaced by dashes, the `B` is transformed into lower-case `b` and both the `é`
+an `à` are removed).
 
-For most use-cases (and at least for english headings), doing anchor
-generation this way is generally compatible to how tools like GitHub and GitLab
-also generate their headings, leading to anchor links in Markdown files that are
+For most use-cases (and at least for english headings), doing anchor generation
+this way is generally compatible to how tools like GitHub and GitLab also
+generate their headings, leading to anchor links in Markdown files that are
 still functional in those tools.
 
 Duplicated headings in the same page should be avoided. If README see two
@@ -217,10 +219,10 @@ to the `Installation` chapter of the `Home.html` page:
 
 ### Image, audio and video
 
-When linking to a media resource, either through [Markdown syntax's for
-images](https://spec.commonmark.org/0.30/#images) or through embedded HTML
-elements, README will automatically copy the resouce so it is also accessible
-from the output directory.
+When linking to a media resource, either through
+[Markdown syntax's for images](https://spec.commonmark.org/0.30/#images) or
+through embedded HTML elements, README will automatically copy the resouce so it
+is also accessible from the output directory.
 
 For example, I can insert an image by writing something like
 `![README logo](../../assets/img/logo.png "README")`, which will copy the image
@@ -249,15 +251,16 @@ In that root directory, you want to put subdirectories corresponding to the
 you do not want to group together (for example in this documentation, categories
 are "Getting Started" and "API"). You do not need to name the directory the same
 way you want the category to be called in the resulting HTML documentation, this
-"display name" will be configurable in [the Configuration step](./Configuration.md).
+"display name" will be configurable in
+[the Configuration step](./Configuration.md).
 
 Inside that second level of directories (the "Category" ones), you can either
 put directly your Markdown documentation pages, or directories themselves
 containing Markdown documentation pages if you want to create multiple linked
 pages in a "page groups" (in the documentation you're reading right now the
-"Step by step guide" is a page group for example).
-Once again, the name of those files and directories aren't important as the
-name used for display in links will be configured elsewhere.
+"Step by step guide" is a page group for example). Once again, the name of those
+files and directories aren't important as the name used for display in links
+will be configured elsewhere.
 
 Likewise, the order in which those files may be listed (alphabetically or
 otherwise) is unimportant. You'll set-up configuration files in the next steps

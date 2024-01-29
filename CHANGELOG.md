@@ -2,7 +2,8 @@
 
 ## Other
 
-- Rename project to README, and move it under a canalplus scope on npm to facilitate inside contributions
+- Rename project to README, and move it under a canalplus scope on npm to
+  facilitate inside contributions
 
 # v0.2.3 (2023-04-21)
 
