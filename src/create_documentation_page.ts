@@ -171,6 +171,11 @@ async function checkAndCopyMediaAsset(
     return;
   }
 
+  // TODO more protocols
+  if (/^https?:\/\//g.test(src)) {
+    return;
+  }
+
   const inputFile = path.join(inputDir, src);
   const outputFile = path.join(outputDir, src);
   const outDir = path.dirname(outputFile);
