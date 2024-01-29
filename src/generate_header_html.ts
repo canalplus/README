@@ -20,7 +20,7 @@ export default function generateHeaderHtml(
   config: ParsedDocConfig,
   currentLinkIdx: number,
   currentPath: string,
-  logoInfo: LogoInformation | null
+  logoInfo: LogoInformation | null,
 ): string {
   const { versionInfo, links, linksRightIndex } = config;
   const hamburgerHtml = constructHamburgerMenuHtmlInHeaderBar();
@@ -33,8 +33,8 @@ export default function generateHeaderHtml(
         i === linksRightIndex
           ? " first-right"
           : i === linksRightIndex - 1
-          ? " last-left"
-          : "";
+            ? " last-left"
+            : "";
       switch (l.type) {
         case "local-doc": {
           if (l.firstPage === undefined) {
@@ -42,7 +42,7 @@ export default function generateHeaderHtml(
           }
           const relativeUri = toUriCompatibleRelativePath(
             l.firstPage,
-            currentDir
+            currentDir,
           );
           const activeClass = i === currentLinkIdx ? " navbar-active" : "";
           const cleanedHref = encode(relativeUri);
@@ -97,7 +97,7 @@ function constructHamburgerMenuHtmlInHeaderBar(): string {
  */
 function constructVersionLinkHtmlInHeaderBar(
   versionInfo: VersionInformation | null | undefined,
-  customClass: string
+  customClass: string,
 ): string {
   if (
     versionInfo === undefined ||
@@ -131,7 +131,7 @@ function constructVersionLinkHtmlInHeaderBar(
  */
 function constructGithubLinkHtmlInHeaderBar(
   githubLnk: string,
-  customClass: string
+  customClass: string,
 ): string {
   const cleanedHref = encode(githubLnk);
   return (
@@ -161,7 +161,7 @@ function constructSearchHtmlInHeaderBar(customClass: string): string {
  * @returns {string}
  */
 function constructLogoHtmlInHeaderBar(
-  logoInfo: LogoInformation | undefined | null
+  logoInfo: LogoInformation | undefined | null,
 ): string {
   if (logoInfo === null || logoInfo === undefined) {
     return "";

@@ -14,7 +14,7 @@ async function mkdirParent(dirPath: string, mode?: string): Promise<void> {
   } catch (error) {
     if (error != null && (error as { errno?: number }).errno === -2) {
       return mkdirParent(path.dirname(dirPath), mode).then(() =>
-        mkdirParent(dirPath, mode)
+        mkdirParent(dirPath, mode),
       );
     }
     throw error;
@@ -28,7 +28,7 @@ async function mkdirParent(dirPath: string, mode?: string): Promise<void> {
  */
 function toUriCompatibleRelativePath(
   target: string,
-  currentDir: string
+  currentDir: string,
 ): string {
   // TODO this is quite ugly but should work for most cases.
   // See if there's a better and more compatible way of doing this.

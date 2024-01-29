@@ -16,7 +16,7 @@ export interface FileSearchIndex {
  * @returns {Array.<Object>}
  */
 export default function getSearchDataForContent(
-  contentHtml: string
+  contentHtml: string,
 ): FileSearchIndex[] {
   const indexForFile: FileSearchIndex[] = [];
   const $ = load(contentHtml);

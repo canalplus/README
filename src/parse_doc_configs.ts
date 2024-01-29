@@ -77,7 +77,7 @@ export interface ParsedDocConfig {
 export default async function parseDocConfigs(
   baseInDir: string,
   baseOutDir: string,
-  version: string | undefined
+  version: string | undefined,
 ): Promise<ParsedDocConfig> {
   const rootConfigFileName = path.join(baseInDir, ".docConfig.json");
   const rootConfig = await parseAndCheckRootConfigFile(rootConfigFileName);
@@ -120,7 +120,7 @@ export default async function parseDocConfigs(
         parsedCategory = await parseLocalDocCategory(
           category,
           baseInDir,
-          baseOutDir
+          baseOutDir,
         );
         break;
       case "version":
@@ -153,7 +153,7 @@ export default async function parseDocConfigs(
 async function parseLocalDocCategory(
   category: any,
   baseInDir: string,
-  baseOutDir: string
+  baseOutDir: string,
 ): Promise<LocalDocCategory> {
   const categoryPath = path.join(baseInDir, category.path);
   const categoryOutPath = path.join(baseOutDir, category.path);
@@ -191,7 +191,7 @@ async function parseLocalDocCategory(
         const subPageOutPath = path.join(
           categoryOutPath,
           page.path,
-          subPage.path
+          subPage.path,
         );
         let subPageState;
         try {
@@ -199,7 +199,7 @@ async function parseLocalDocCategory(
         } catch (err) {
           const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
           console.error(
-            `Error: Cannot run stat on "${subPagePath}": ${srcMessage}`
+            `Error: Cannot run stat on "${subPagePath}": ${srcMessage}`,
           );
           process.exit(1);
         }
@@ -208,13 +208,13 @@ async function parseLocalDocCategory(
           console.error(
             'Error: Category page depth cannot exceed 2 yet "' +
               subPagePath +
-              '" is a directory.'
+              '" is a directory.',
           );
           process.exit(1);
         }
         const outputFile = path.join(
           path.dirname(subPageOutPath),
-          path.basename(subPagePath, ".md") + ".html"
+          path.basename(subPagePath, ".md") + ".html",
         );
         if (parsedPage.pages === undefined) {
           parsedPage.pages = [];
@@ -229,7 +229,7 @@ async function parseLocalDocCategory(
     } else if (pageStat.isFile()) {
       const outputFile = path.join(
         categoryOutPath,
-        path.basename(pagePath, ".md") + ".html"
+        path.basename(pagePath, ".md") + ".html",
       );
       parsedCategory.pages.push({
         isPageGroup: false,
@@ -262,7 +262,7 @@ async function parseLocalDocCategory(
  * @returns {Promise.<Object>}
  */
 async function parseAndCheckRootConfigFile(
-  rootConfigFileName: string
+  rootConfigFileName: string,
 ): Promise<any> {
   let configStr;
   try {
@@ -273,7 +273,7 @@ async function parseAndCheckRootConfigFile(
       'Error: Impossible to read Root .docConfig.json file ("' +
         rootConfigFileName +
         '"): ' +
-        srcMessage
+        srcMessage,
     );
     process.exit(1);
   }
@@ -293,14 +293,14 @@ async function parseAndCheckRootConfigFile(
   if (config.logo !== undefined) {
     if (typeof config.logo !== "object" || config.logo === null) {
       exitWithInvalidRootConfig(
-        `The "logo" property, if defined, should contain an object.`
+        `The "logo" property, if defined, should contain an object.`,
       );
     }
 
     if (typeof config.logo.srcPath !== "string") {
       exitWithInvalidRootConfig(
         `The "logo" property, if defined, should contain a "srcPath" ` +
-          "property set as a string."
+          "property set as a string.",
       );
     }
 
@@ -309,7 +309,7 @@ async function parseAndCheckRootConfigFile(
       typeof config.logo.link !== "string"
     ) {
       exitWithInvalidRootConfig(
-        `The "logo.link" property, if defined, should be set as a string.`
+        `The "logo.link" property, if defined, should be set as a string.`,
       );
     }
   }
@@ -318,7 +318,7 @@ async function parseAndCheckRootConfigFile(
     if (typeof config.favicon.srcPath !== "string") {
       exitWithInvalidRootConfig(
         `The "favicon" property, if defined, should contain a "srcPath" ` +
-          "property set as a string."
+          "property set as a string.",
       );
     }
   }
@@ -328,7 +328,7 @@ async function parseAndCheckRootConfigFile(
     typeof config.otherVersionsLink !== "string"
   ) {
     exitWithInvalidRootConfig(
-      `The "otherVersionsLink" property, if defined, should be set as a string.`
+      `The "otherVersionsLink" property, if defined, should be set as a string.`,
     );
   }
 
@@ -337,7 +337,7 @@ async function parseAndCheckRootConfigFile(
     !Array.isArray(config.linksLeft)
   ) {
     exitWithInvalidRootConfig(
-      `The "linksLeft" property, if defined, should be set as an Array.`
+      `The "linksLeft" property, if defined, should be set as an Array.`,
     );
   }
 
@@ -346,7 +346,7 @@ async function parseAndCheckRootConfigFile(
     !Array.isArray(config.linksRight)
   ) {
     exitWithInvalidRootConfig(
-      `The "linksRight" property, if defined, should be set as an Array.`
+      `The "linksRight" property, if defined, should be set as an Array.`,
     );
   }
 
@@ -354,7 +354,7 @@ async function parseAndCheckRootConfigFile(
 
   function exitWithInvalidRootConfig(reason: string): never {
     console.error(
-      `Error: Root .docConfig.json file ("${rootConfigFileName}") is invalid: ${reason}`
+      `Error: Root .docConfig.json file ("${rootConfigFileName}") is invalid: ${reason}`,
     );
     process.exit(1);
   }
@@ -371,7 +371,7 @@ async function parseAndCheckSubConfigFile(filename: string): Promise<any> {
   } catch (err) {
     const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
     console.error(
-      `Error: Impossible to read "${filename}" config file: ${srcMessage}`
+      `Error: Impossible to read "${filename}" config file: ${srcMessage}`,
     );
     process.exit(1);
   }
@@ -388,7 +388,7 @@ async function parseAndCheckSubConfigFile(filename: string): Promise<any> {
   if (typeof config !== "object" || config === null) {
     console.error(
       `Error: "${filename}" config file is invalid: ` +
-        `Should be under an object form.`
+        `Should be under an object form.`,
     );
     process.exit(1);
   }
@@ -396,7 +396,7 @@ async function parseAndCheckSubConfigFile(filename: string): Promise<any> {
   if (!Array.isArray(config.pages) || config.pages.length === 0) {
     console.error(
       `Error: "${filename}" config file is invalid: ` +
-        `Should have a "pages" property with at least one entry.`
+        `Should have a "pages" property with at least one entry.`,
     );
     process.exit(1);
   }
@@ -406,14 +406,14 @@ async function parseAndCheckSubConfigFile(filename: string): Promise<any> {
       console.error(
         `Error: "${filename}" config file is invalid: ` +
           `One of the element in "pages" has an invalid "path" property ` +
-          "(should be a string)."
+          "(should be a string).",
       );
       process.exit(1);
     } else if (typeof page.displayName !== "string") {
       console.error(
         `Error: "${filename}" config file is invalid: ` +
           `One of the element in "pages" has an invalid "displayName" property ` +
-          "(should be a string)."
+          "(should be a string).",
       );
       process.exit(1);
     }

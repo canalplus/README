@@ -15,7 +15,7 @@ export default function generatePageListHtml(
   links: LinkCategory[],
   currentLinkIdx: number,
   currentPageIndexes: number[],
-  currentPath: string
+  currentPath: string,
 ): string {
   const currentDir = path.dirname(currentPath);
   const linksHtml = links
@@ -45,7 +45,7 @@ export default function generatePageListHtml(
                   const pageActiveClasses = isPageActive ? " active" : "";
                   const relativeUri = toUriCompatibleRelativePath(
                     outputFile,
-                    currentDir
+                    currentDir,
                   );
                   return (
                     `<li class="page-list-item${pageActiveClasses}">` +
@@ -76,7 +76,7 @@ export default function generatePageListHtml(
                       }
                       const relativeUri = toUriCompatibleRelativePath(
                         outputFile,
-                        currentDir
+                        currentDir,
                       );
                       return (
                         `<li class="page-list-item${spActiveClasses}">` +

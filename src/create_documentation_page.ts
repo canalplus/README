@@ -71,7 +71,7 @@ export default async function createDocumentationPage({
 }): Promise<void> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
-    path.dirname(outputFile)
+    path.dirname(outputFile),
   );
   const outputUrlFromRoot = toUriCompatibleRelativePath(outputFile, baseOutDir);
 
@@ -125,7 +125,7 @@ export default async function createDocumentationPage({
 async function copyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
-  outputDir: string
+  outputDir: string,
 ): Promise<void> {
   const src = mediaTag.attr("src");
   if (!src) {
@@ -144,7 +144,7 @@ async function copyMediaAsset(
     } catch (err) {
       const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
       console.error(
-        `Error: Could not create "${outDir}" directory: ${srcMessage}`
+        `Error: Could not create "${outDir}" directory: ${srcMessage}`,
       );
       process.exit(1);
     }
@@ -160,7 +160,7 @@ function constructNextPreviousPage(
   nextPageInfo: {
     link: string;
     name: string;
-  } | null
+  } | null,
 ): string {
   if (prevPageInfo === null && nextPageInfo === null) {
     return "";
@@ -180,7 +180,7 @@ function constructNextPreviousPage(
       link: string;
       name: string;
     } | null,
-    isNext: boolean
+    isNext: boolean,
   ): string {
     const base = `<div class="next-or-previous-page${
       isNext ? " next-page" : ""
@@ -217,7 +217,7 @@ async function parseMD(
   data: string,
   inputDir: string,
   outputDir: string,
-  linkTranslator: ((link: string) => string | undefined) | null | undefined
+  linkTranslator: ((link: string) => string | undefined) | null | undefined,
 ): Promise<{
   /** HTML output */
   html: string;

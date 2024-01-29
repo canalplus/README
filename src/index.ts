@@ -109,7 +109,7 @@ function processArgs(): {
     console.error(
       "Error: The documentation generator needs at least " +
         "the input directory (behind an `-i` flag) and the output directory" +
-        " (behind an `-o` flag) but at least one of them was missing."
+        " (behind an `-o` flag) but at least one of them was missing.",
     );
     process.exit(1);
   }

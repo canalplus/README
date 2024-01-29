@@ -126,7 +126,7 @@ function constructScriptsHtml(scriptUrls: string[]): string {
     .map(
       (scriptUrl) =>
         `<script type="text/javascript" src="${encode(scriptUrl)}" ` +
-        `charset="utf-8"></script>`
+        `charset="utf-8"></script>`,
     )
     .join("");
 }
