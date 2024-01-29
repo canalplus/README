@@ -38,8 +38,9 @@ at the
 and compare it to its
 [original markdown files](https://github.com/canalplus/rx-player/tree/master/doc/Getting_Started).
 
-_Yes we should probably have generated that tool's documentation through it
-instead, but we wrote this README in a haste so maybe for later :p._
+You can also look at [README's own documentation](https://peaberberian.github.io/README/doc/Getting_Started/Home.html)
+and compare it to its
+[original markdown files](https://github.com/canalplus/README/tree/main/doc/Getting_Started).
 
 ## Installation
 
