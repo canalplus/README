@@ -11,8 +11,8 @@ When relying on README, all you need to do is:
    (the full ubiquitous CommonMark syntax is handled, with no added special
    syntax).
 
-    Note that links, including those between Markdown files, are handled, as
-    well as things like embedded image, video and audio resources.
+   Note that links, including those between Markdown files, are handled, as
+   well as things like embedded image, video and audio resources.
 
 2. Put them in directories following a file tree architecture reflecting your
    wanted HTML documentation (categories in different directories, page groups

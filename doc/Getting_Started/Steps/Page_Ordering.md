@@ -45,18 +45,18 @@ different than the one of the global configuration, that's what we'll see here.
 
 Those "local" `.docConfig.json` just needs to be given:
 
--   The order in which documentation pages should be showned. This is achieved
-    by listing those pages in a `pages` array property. Pages are listed from
-    top to bottom.
+- The order in which documentation pages should be showned. This is achieved
+  by listing those pages in a `pages` array property. Pages are listed from
+  top to bottom.
 
--   For each page, a link to the Markdown file containing the documentation you
-    want to show, as well as the name with which it should be referred to.
+- For each page, a link to the Markdown file containing the documentation you
+  want to show, as well as the name with which it should be referred to.
 
--   Optionally for page groups (directories), you can indicate if you want this
-    page groups to be opened by default when going to the documentation.
+- Optionally for page groups (directories), you can indicate if you want this
+  page groups to be opened by default when going to the documentation.
 
-    If not, the page group will only be opened if either the reader opened it,
-    or if the current visualized page is inside that page group.
+  If not, the page group will only be opened if either the reader opened it,
+  or if the current visualized page is inside that page group.
 
 Here is a completely annotated example:
 
@@ -97,12 +97,12 @@ Here is a completely annotated example:
 You'll have to add a `.docConfig.json` file in each directory in which
 documentation pages are found:
 
--   In the "Categories" directories (those behind a `local-doc` link in the
-    global configuration)
+- In the "Categories" directories (those behind a `local-doc` link in the
+  global configuration)
 
--   In all the page groups inside those directories (meaning: the
-    subdirectories, which themselves had to be referenced in the
-    `.docConfig.json` of the corresponding Category)
+- In all the page groups inside those directories (meaning: the
+  subdirectories, which themselves had to be referenced in the
+  `.docConfig.json` of the corresponding Category)
 
 Let's see again the example at the top of this page:
 
@@ -135,4 +135,4 @@ You can see in this example that there are three "local configuration" files:
 
 2.  Inside the `doc/Getting_Started/Steps` page group
 
-2.  Inside the `doc/API` Category directory
+3.  Inside the `doc/API` Category directory

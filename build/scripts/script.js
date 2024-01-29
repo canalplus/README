@@ -429,7 +429,7 @@ function initializeSearchEngine() {
     .then((res) => {
       if (!Array.isArray(res)) {
         console.error(
-          "Failed to initialize search: index has an invalid format."
+          "Failed to initialize search: index has an invalid format.",
         );
         return;
       }
@@ -648,7 +648,7 @@ function initializeHamburgerMenu() {
     document.getElementsByClassName("hamburger-opener")[0];
   const hamburgerBarElt = document.getElementsByClassName("hamburger-bar")[0];
   const hamburgerCloserElt = document.getElementsByClassName(
-    "hamburger-bar-closer"
+    "hamburger-bar-closer",
   )[0];
 
   hamburgerOpenerElt.addEventListener("click", openMenu);

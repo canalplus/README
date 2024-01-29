@@ -119,7 +119,7 @@
       n ||
         t.utils.warn(
           "Function is not registered with pipeline. This may cause problems when serialising the index.\n",
-          e
+          e,
         );
     }),
     (t.Pipeline.load = function (e) {
@@ -195,7 +195,7 @@
           "update",
           function () {
             this._idfCache = {};
-          }.bind(this)
+          }.bind(this),
         );
     }),
     (t.Index.prototype.on = function () {
@@ -208,7 +208,7 @@
     (t.Index.load = function (e) {
       e.version !== t.version &&
         t.utils.warn(
-          "version mismatch: current " + t.version + " importing " + e.version
+          "version mismatch: current " + t.version + " importing " + e.version,
         );
       var n = new this();
       (n._fields = e.fields),
@@ -458,8 +458,8 @@
       return null === e || void 0 === e
         ? 0
         : e in this.docs && t in this.docInfo[e]
-        ? this.docInfo[e][t]
-        : 0;
+          ? this.docInfo[e][t]
+          : 0;
     }),
     (t.DocumentStore.prototype.toJSON = function () {
       return {
@@ -561,8 +561,8 @@
                 u.test(n)
                   ? (n += "e")
                   : a.test(n)
-                  ? ((s = y), (n = n.replace(s, "")))
-                  : l.test(n) && (n += "e"));
+                    ? ((s = y), (n = n.replace(s, "")))
+                    : l.test(n) && (n += "e"));
           }
           if (((s = I), s.test(n))) {
             var z = s.exec(n);
@@ -821,7 +821,7 @@
         (i = JSON.parse(e)), this.buildUserConfig(i, n);
       } catch (o) {
         t.utils.warn(
-          "user configuration parse failed, will use default configuration"
+          "user configuration parse failed, will use default configuration",
         ),
           this.buildDefaultConfig(n);
       }
@@ -853,7 +853,7 @@
               });
           } else
             t.utils.warn(
-              "field name in user configuration not found in index instance fields"
+              "field name in user configuration not found in index instance fields",
             );
       else this.addAllFields2UserConfig(i, o, n);
     }),
@@ -966,8 +966,8 @@
       "function" == typeof define && define.amd
         ? define(t)
         : "object" == typeof exports
-        ? (module.exports = t())
-        : (e.elasticlunr = t());
+          ? (module.exports = t())
+          : (e.elasticlunr = t());
     })(this, function () {
       return t;
     });
