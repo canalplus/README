@@ -23,66 +23,75 @@ import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
  */
 const BLACKLIST_ANCHOR = /[^a-z0-9_-]/g;
 
+/** Input data required to produce a single documentation page. */
+export interface DocumentationPageSettings {
+  /** Absolute path to the root dir where all outputed files will be */
+  baseOutDir: string;
+  /** Relative CSS URLs on this page */
+  cssUrls: string[];
+  /** Eventual URL to the favicon */
+  faviconUrl: string | null;
+  /** Absolute path to the file that should be converted */
+  inputFile: string;
+  /** Function translating links in Markdown files to an URL form to the right file */
+  linkTranslator: (link: string) => string | undefined;
+  /** HTML string for the navbar (the header on the top of the page) */
+  navBarHtml: string;
+  /** Information relative to the next documentation page, `null` if none. */
+  nextPageInfo: {
+    /** Relative URL linking to it. */
+    link: string;
+    /** Display Name for the page. */
+    name: string;
+  } | null;
+  /** Absolute path where the generated page should be generated. */
+  outputFile: string;
+  /** HTML string for the complete list of documentation pages with links */
+  pageListHtml: string;
+  /** Title of the corresponding HTML page */
+  pageTitle: string;
+  /** Information relative to the previous documentation page, `null` if none. */
+  prevPageInfo: {
+    /** Relative URL linking to it. */
+    link: string;
+    /** Display Name for the page. */
+    name: string;
+  } | null;
+  /** Relative JS URLs on this page */
+  scriptUrls: string[];
+  /**
+   * Array corresponding to the complete search index.
+   * It will be completed with data present in this file.
+   */
+  searchIndex: Array<{
+    file: string;
+    index: FileSearchIndex[];
+  }>;
+  /** HTML string for the sidebar */
+  sidebarHtml: string;
+}
+
 /**
  * Create and write HTML page output file from the markdown input file.
  * @param {Object} options
  * @returns {Promise}
  */
 export default async function createDocumentationPage({
-  // Absolute path to the root dir where all outputed files will be
   baseOutDir,
-  // Relative CSS URLs on this page
   cssUrls,
-  // Eventual URL to the favicon
   faviconUrl,
-  // Absolute path to the file that should be converted
   inputFile,
-  // Function translating links in Markdown files to an URL form to the right file
   linkTranslator,
-  // HTML string for the navbar (the header on the top of the page)
   navBarHtml,
-  // Information relative to the next documentation page, `null` if none.
   nextPageInfo,
-  // Absolute path where the generated page should be generated.
   outputFile,
-  // HTML string for the complete list of documentation pages with links
   pageListHtml,
-  // Title of the corresponding HTML page
   pageTitle,
-  // Information relative to the previous documentation page, `null` if none.
   prevPageInfo,
-  // Relative JS URLs on this page
   scriptUrls,
-  // Array corresponding to the complete search index.
-  // It will be completed with data present in this file.
   searchIndex,
-  // HTML string for the sidebar
   sidebarHtml,
-}: {
-  baseOutDir: string;
-  cssUrls: string[];
-  faviconUrl: string | null;
-  inputFile: string;
-  linkTranslator: (link: string) => string | undefined;
-  navBarHtml: string;
-  nextPageInfo: {
-    link: string;
-    name: string;
-  } | null;
-  outputFile: string;
-  pageListHtml: string;
-  pageTitle: string;
-  prevPageInfo: {
-    link: string;
-    name: string;
-  } | null;
-  scriptUrls: string[];
-  searchIndex: Array<{
-    file: string;
-    index: FileSearchIndex[];
-  }>;
-  sidebarHtml: string;
-}): Promise<void> {
+}: DocumentationPageSettings): Promise<void> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
     path.dirname(outputFile)
@@ -137,7 +146,21 @@ export default async function createDocumentationPage({
   }
 }
 
-async function copyMediaAsset(
+/**
+ * Check that a media asset referenced in a media Element is valid (e.g. it
+ * exists and is inside the root directory and copy it into the output directory
+ * if so.
+ * @param {Object} mediaTag
+ * @param {string} inputDir - The directory where the current input file where
+ * that media tag was found is.
+ * @param {string} outputDir - The directory where the wanted corresponding
+ * generated documentation file will be.
+ * @param {string} baseOutDir - The root output directory where all output files
+ * will be copied.
+ * @returns {Promise} - Promise which resolves on success and reject if things
+ * get wrong.
+ */
+async function checkAndCopyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
   outputDir: string,
@@ -177,6 +200,12 @@ async function copyMediaAsset(
   await promisify(fs.copyFile)(inputFile, outputFile);
 }
 
+/**
+ * Construct the next and previous page nav Element.
+ * @param {Object|null} prevPageInfo
+ * @param {Object|null} nextPageInfo
+ * @returns {string}
+ */
 function constructNextPreviousPage(
   prevPageInfo: {
     link: string;
@@ -270,15 +299,30 @@ async function parseMD(
 
   const imgTags = $("img").toArray();
   for (let i = 0; i < imgTags.length; i++) {
-    await copyMediaAsset($(imgTags[i]), inputDir, outputDir, baseOutDir);
+    await checkAndCopyMediaAsset(
+      $(imgTags[i]),
+      inputDir,
+      outputDir,
+      baseOutDir
+    );
   }
   const audioTags = $("audio").toArray();
   for (let i = 0; i < audioTags.length; i++) {
-    await copyMediaAsset($(audioTags[i]), inputDir, outputDir, baseOutDir);
+    await checkAndCopyMediaAsset(
+      $(audioTags[i]),
+      inputDir,
+      outputDir,
+      baseOutDir
+    );
   }
   const videoTags = $("video").toArray();
   for (let i = 0; i < videoTags.length; i++) {
-    await copyMediaAsset($(videoTags[i]), inputDir, outputDir, baseOutDir);
+    await checkAndCopyMediaAsset(
+      $(videoTags[i]),
+      inputDir,
+      outputDir,
+      baseOutDir
+    );
   }
 
   // Generate headers anchor links, just before headers are declared.
