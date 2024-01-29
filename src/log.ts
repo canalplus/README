@@ -12,7 +12,7 @@ const resetEsc = "\u001b[39m";
  */
 export default function log(
   level: "LOG" | "WARNING" | "ERROR",
-  msg: string
+  msg: string,
 ): void {
   let message = "";
   if (process.stdout.isTTY) {

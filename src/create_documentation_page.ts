@@ -100,7 +100,7 @@ export default async function createDocumentationPage({
 }: DocumentationPageSettings): Promise<DocumentationPageMetadata> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
-    path.dirname(outputFile)
+    path.dirname(outputFile),
   );
   const outputUrlFromRoot = toUriCompatibleRelativePath(outputFile, baseOutDir);
 
@@ -170,7 +170,7 @@ async function checkAndCopyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
   outputDir: string,
-  baseOutDir: string
+  baseOutDir: string,
 ): Promise<void> {
   const src = mediaTag.attr("src");
   if (src === null || src === undefined || src === "") {
@@ -192,7 +192,7 @@ async function checkAndCopyMediaAsset(
     throw new Error(
       "You're trying to copy a media asset outside of your root directory (" +
         src +
-        "). This is for forbidden for now."
+        "). This is for forbidden for now.",
     );
   }
 
@@ -225,7 +225,7 @@ function constructNextPreviousPage(
   nextPageInfo: {
     link: string;
     name: string;
-  } | null
+  } | null,
 ): string {
   if (prevPageInfo === null && nextPageInfo === null) {
     return "";
@@ -245,7 +245,7 @@ function constructNextPreviousPage(
       link: string;
       name: string;
     } | null,
-    isNext: boolean
+    isNext: boolean,
   ): string {
     const base = `<div class="next-or-previous-page${
       isNext ? " next-page" : ""
@@ -283,7 +283,7 @@ async function parseMD(
   inputDir: string,
   outputDir: string,
   baseOutDir: string,
-  linkTranslator: ((link: string) => string | undefined) | null | undefined
+  linkTranslator: ((link: string) => string | undefined) | null | undefined,
 ): Promise<{
   /** HTML output */
   html: string;
@@ -317,7 +317,7 @@ async function parseMD(
       $(imgTags[i]),
       inputDir,
       outputDir,
-      baseOutDir
+      baseOutDir,
     );
   }
   const audioTags = $("audio").toArray();
@@ -326,7 +326,7 @@ async function parseMD(
       $(audioTags[i]),
       inputDir,
       outputDir,
-      baseOutDir
+      baseOutDir,
     );
   }
   const videoTags = $("video").toArray();
@@ -335,7 +335,7 @@ async function parseMD(
       $(videoTags[i]),
       inputDir,
       outputDir,
-      baseOutDir
+      baseOutDir,
     );
   }
 
@@ -373,7 +373,7 @@ async function parseMD(
         .trim()
         .toLowerCase()
         .replace(/ /g, "-")
-        .replace(BLACKLIST_ANCHOR, "")
+        .replace(BLACKLIST_ANCHOR, ""),
     );
     if (generatedAnchors[baseUri] !== true) {
       generatedAnchors[baseUri] = true;
