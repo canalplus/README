@@ -2,3 +2,4 @@
 /build/*
 !/build/scripts
 !/build/styles
+/doc-build

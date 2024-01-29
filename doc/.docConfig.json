@@ -1,0 +1,33 @@
+{
+  "logo": {
+    "srcPath": "./assets/img/logo.png",
+    "link": "https://github.com/canalplus/README"
+  },
+  "favicon": {
+    "srcPath": "./assets/img/favicon.png"
+  },
+  "linksLeft": [
+    {
+      "type": "local-doc",
+      "path": "./Getting_Started",
+      "displayName": "Getting Started"
+    },
+    {
+      "type": "local-doc",
+      "path": "./API",
+      "displayName": "API"
+    },
+    {
+      "type": "search"
+    }
+  ],
+  "linksRight": [
+    {
+      "type": "github-link",
+      "link": "https://github.com/canalplus/README"
+    },
+    {
+      "type": "version"
+    }
+  ]
+}

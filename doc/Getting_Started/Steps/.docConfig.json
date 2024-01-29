@@ -1,0 +1,24 @@
+{
+  "pages": [
+    {
+      "path": "./Documentation_Files.md",
+      "displayName": "1 - Documentation Files"
+    },
+    {
+      "path": "./Configuration.md",
+      "displayName": "2 - Configuration"
+    },
+    {
+      "path": "./Page_Ordering.md",
+      "displayName": "3 - Page Listing"
+    },
+    {
+      "path": "./Run.md",
+      "displayName": "4 - Run"
+    },
+    {
+      "path": "./Serve.md",
+      "displayName": "5 - Serve"
+    }
+  ]
+}

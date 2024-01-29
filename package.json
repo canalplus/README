@@ -9,6 +9,8 @@
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
+    "doc": "node build/index.js doc doc-build `npm run getVersion`",
+    "getVersion": "node -e \"console.log(require('./package.json').version)\"",
     "fmt": "prettier src/* --write src"
   },
   "repository": {

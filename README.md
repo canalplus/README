@@ -41,6 +41,9 @@ instead, but we wrote this README in a haste so maybe for later :p._
 
 ## Installation
 
+To rely on README, you need to have Node.js and a node package manager installed
+(a default one, `npm`, will probably be automatically installed with Node.js).
+
 The README project is published under the `@canalplus/readme.doc` name on npm:
 
 ```sh
@@ -57,7 +60,7 @@ It is then runnable (e.g. as an npm script in your `package.json` or through
 `npx`) through the `readme.doc` name:
 
 ```sh
-readme.doc src dest
+readme.doc --input src --output dest
 ```
 
 See below for more details on how to run it.

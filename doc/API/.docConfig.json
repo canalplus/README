@@ -1,0 +1,20 @@
+{
+  "pages": [
+    {
+      "path": "./CLI.md",
+      "displayName": "CLI API"
+    },
+    {
+      "path": "./JS_API.md",
+      "displayName": "JavaScript API"
+    },
+    {
+      "path": "./Documentation_Pages.md",
+      "displayName": "Documentation Pages"
+    },
+    {
+      "path": "./Configuration.md",
+      "displayName": "Configuration"
+    }
+  ]
+}

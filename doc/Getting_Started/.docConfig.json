@@ -1,0 +1,17 @@
+{
+  "pages": [
+    {
+      "path": "./Home.md",
+      "displayName": "README Overview"
+    },
+    {
+      "path": "./Steps",
+      "defaultOpen": true,
+      "displayName": "Step by step guide"
+    },
+    {
+      "path": "./HTML_Page_Features.md",
+      "displayName": "Features of the HTML pages"
+    }
+  ]
+}
