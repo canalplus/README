@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Update gh-pages doc
+# ====================
+#
+# This script allows to automatically update the generated documentation on the
+# gh-pages branch.
+#
+# To use it:
+#
+#   1. Be sure that you're on a clean (no staged files and no diff) main
+#      branch.
+#
+#   2. Call this script.
+#      Some user interactions will be needed to avoid doing unwanted commits.
+#
+#   3. That's it!
+#      A commit should have been pushed to the gh-pages.
+
+set -e
+
+current_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+current_version=$(npm run --silent getVersion)
+
+if ! [ "$current_branch" == "main" ]; then
+  echo $current_branch
+  echo "ERROR: The current branch should be main"
+  exit 1;
+fi
+
+# Generate documentation
+npm run doc
+
+if [ -n "$(git status --porcelain doc)" ]; then
+  echo "ERROR: Please commit your modifications to main"
+  exit 1;
+fi
+
+tmpDir=$(mktemp -d)
+tmpDocList=$(mktemp)
+
+cp -r doc-build/* $tmpDir
+cp generate_documentation_list.mjs $tmpDocList -v
+
+# update gh-pages
+git checkout gh-pages
+git pull origin gh-pages
+
+rm -rf "versions/$current_version/doc"
+mkdir -p "versions/$current_version/doc"
+rm -rf doc
+mv $tmpDir/* "versions/$current_version/doc"
+ln -s "./versions/$current_version/doc" doc
+mv $tmpDocList  generate_documentation_list.mjs
+
+node generate_documentation_list.mjs
+rm generate_documentation_list.mjs
+
+if [ -n "$(git status --porcelain doc "versions/$current_version/doc" documentation_pages_by_version.html)" ]; then
+  echo "-- Current Status on gh-pages: --"
+  echo ""
+  git status doc "versions/$current_version/doc" documentation_pages_by_version.html
+
+  while : ; do
+    echo ""
+    echo "We will push the documentation to gh-pages."
+    REPLY=""
+    read -p "do you want to continue [y/d/s/a/c/t/h] (h for help) ? " -n 1 -r
+    echo ""
+
+    if [[ $REPLY =~ ^[Hh](elp)?$ ]]; then
+      echo ""
+      echo ""
+      echo "+- help -------------------------------------------------+"
+      echo "| y: commit and continue                                 |"
+      echo "| d: see diff                                            |"
+      echo "| s: see status                                          |"
+      echo "| a: abort script from here                              |"
+      echo "| c: checkout from this commit and go to the next one    |"
+      echo "| t: stash this commit and go to the next one            |"
+      echo "| h: see this help                                       |"
+      echo "+--------------------------------------------------------+"
+    elif [[ $REPLY =~ ^[Yy](es)?$ ]]; then
+      git add doc "versions/$current_version/doc" documentation_pages_by_version.html
+      git commit -m "doc: deploy $current_version to the gh-pages" -S
+      git push origin gh-pages
+      break
+    elif [[ $REPLY =~ ^[Dd](iff)?$ ]]; then
+      git diff doc "versions/$current_version/doc" documentation_pages_by_version.html || true # ignore when return 1
+    elif [[ $REPLY =~ ^[Ss](tatus)?$ ]]; then
+      git status doc "versions/$current_version/doc" documentation_pages_by_version.html
+    elif [[ $REPLY =~ ^[Aa](bort)?$ ]]; then
+      echo "exiting"
+      exit 0
+    elif [[ $REPLY =~ ^[Cc](heckout)?$ ]]; then
+      git checkout doc "versions/$current_version/doc" documentation_pages_by_version.html
+    elif [[ $REPLY =~ ^([Tt]|([Ss]tash))?$ ]]; then
+      git stash -u push doc "versions/$current_version/doc" documentation_pages_by_version.html
+      break
+    fi
+  done
+else
+  echo "nothing to do on the gh-pages branch"
+fi
+
+git checkout main
