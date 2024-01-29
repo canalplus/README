@@ -10,6 +10,20 @@ import getSearchDataForContent from "./get_search_data_for_content.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 /**
+ * All characters stripped from an "anchor" in the form of a negated set
+ * ([^...]), meaning that everything that is listed here is what is authrized.
+ *
+ * Also note that spaces are replaced by dashes.
+ *
+ * We may want to authorize everything that can be added to an URL fragment,
+ * but we also want very simple rules predicitible for the user and mostly
+ * compatible to other markdown viewers (GitHub, GitLab...), so we
+ * basically only authorize lowercase alphanumeric characters, dashes and
+ * underscores.
+ */
+const BLACKLIST_ANCHOR = /[^a-z0-9_-]/g;
+
+/**
  * Create and write HTML page output file from the markdown input file.
  * @param {Object} options
  * @returns {Promise}
@@ -132,12 +146,15 @@ async function copyMediaAsset(
   if (src === null || src === undefined || src === "") {
     return;
   }
+
+  // TODO should we check that the resource is inside the documentation root's
+  // directory to protect the user?
   const inputFile = path.join(inputDir, src);
   const outputFile = path.join(outputDir, src);
-  if (await promisify(fs.exists)(outputFile)) {
-    return;
-  }
   const outDir = path.dirname(outputFile);
+
+  // TODO check if already done in the current invokation
+
   const doesOutDirExists = await promisify(fs.exists)(outDir);
   if (!doesOutDirExists) {
     try {
@@ -281,8 +298,13 @@ async function parseMD(
   };
 
   function generateAnchorName(title: string): string {
-    // TODO better anchor encoding specification
-    const baseUri = encodeURI(title.toLowerCase().replace(/ /g, "_"));
+    const baseUri = encodeURI(
+      title
+        .trim()
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .replace(BLACKLIST_ANCHOR, "")
+    );
     if (generatedAnchors[baseUri] !== true) {
       generatedAnchors[baseUri] = true;
       return baseUri;
