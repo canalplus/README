@@ -60,7 +60,7 @@ It is then runnable (e.g. as an npm script in your `package.json` or through
 `npx`) through the `readme.doc` name:
 
 ```sh
-readme.doc --input src --output dest
+readme.doc <PATH_TO_THE_DOC_ROOT> <PATH_FOR_THE_GENERATED_PAGES> ["<OPTIONAL_VERSION>"]
 ```
 
 See below for more details on how to run it.
