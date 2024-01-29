@@ -1,12 +1,12 @@
-import { promisify } from "util";
-import { AnyNode, Cheerio, load } from "cheerio";
 import * as fs from "fs";
 import * as path from "path";
-import getSearchDataForContent, {
-  FileSearchIndex,
-} from "./get_search_data_for_content.js";
+import { promisify } from "util";
+import { load } from "cheerio";
+import type { AnyNode, Cheerio } from "cheerio";
 import convertMDToHTML from "./convert_MD_to_HMTL.js";
 import generatePageHtml from "./generate_page_html.js";
+import type { FileSearchIndex } from "./get_search_data_for_content.js";
+import getSearchDataForContent from "./get_search_data_for_content.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 /**
@@ -71,7 +71,7 @@ export default async function createDocumentationPage({
 }): Promise<void> {
   const rootUrl = toUriCompatibleRelativePath(
     path.resolve(baseOutDir),
-    path.dirname(outputFile),
+    path.dirname(outputFile)
   );
   const outputUrlFromRoot = toUriCompatibleRelativePath(outputFile, baseOutDir);
 
@@ -86,17 +86,18 @@ export default async function createDocumentationPage({
     return;
   }
   const inputDir = path.dirname(inputFile);
-  let {
-    html: contentHtml,
+  const {
+    html: resHtml,
     tocMd,
     nbTocElements,
   } = await parseMD(data, inputDir, outputDir, linkTranslator);
-  const searchData = getSearchDataForContent(contentHtml);
+  const searchData = getSearchDataForContent(resHtml);
   searchIndex.push({
     file: outputUrlFromRoot,
     index: searchData,
   });
-  contentHtml += constructNextPreviousPage(prevPageInfo, nextPageInfo);
+  const contentHtml =
+    resHtml + constructNextPreviousPage(prevPageInfo, nextPageInfo);
 
   const tocHtml = nbTocElements > 1 ? constructTocBarHtml(tocMd) : "";
   const html = generatePageHtml({
@@ -125,10 +126,10 @@ export default async function createDocumentationPage({
 async function copyMediaAsset(
   mediaTag: Cheerio<AnyNode>,
   inputDir: string,
-  outputDir: string,
+  outputDir: string
 ): Promise<void> {
   const src = mediaTag.attr("src");
-  if (!src) {
+  if (src === null || src === undefined || src === "") {
     return;
   }
   const inputFile = path.join(inputDir, src);
@@ -142,11 +143,9 @@ async function copyMediaAsset(
     try {
       await mkdirParent(outDir);
     } catch (err) {
-      const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
-      console.error(
-        `Error: Could not create "${outDir}" directory: ${srcMessage}`,
-      );
-      process.exit(1);
+      const srcMessage =
+        ((err as { message: string }) ?? {}).message ?? "Unknown error";
+      throw new Error(`Could not create "${outDir}" directory: ${srcMessage}`);
     }
   }
   await promisify(fs.copyFile)(inputFile, outputFile);
@@ -160,7 +159,7 @@ function constructNextPreviousPage(
   nextPageInfo: {
     link: string;
     name: string;
-  } | null,
+  } | null
 ): string {
   if (prevPageInfo === null && nextPageInfo === null) {
     return "";
@@ -180,7 +179,7 @@ function constructNextPreviousPage(
       link: string;
       name: string;
     } | null,
-    isNext: boolean,
+    isNext: boolean
   ): string {
     const base = `<div class="next-or-previous-page${
       isNext ? " next-page" : ""
@@ -217,7 +216,7 @@ async function parseMD(
   data: string,
   inputDir: string,
   outputDir: string,
-  linkTranslator: ((link: string) => string | undefined) | null | undefined,
+  linkTranslator: ((link: string) => string | undefined) | null | undefined
 ): Promise<{
   /** HTML output */
   html: string;
@@ -261,9 +260,16 @@ async function parseMD(
   for (let i = 0; i < hLinks.length; i++) {
     const linkElt = hLinks[i];
     const linkText = $(linkElt).text();
-    let uri = generateAnchorName(linkText);
+    const uri = generateAnchorName(linkText);
     const tagName = hLinks[i].tagName.toLowerCase();
-    const prefix = tagName === "h1" ? "" : tagName === "h2" ? "  - " : "    - ";
+    let prefix;
+    if (tagName === "h1") {
+      prefix = "";
+    } else if (tagName === "h2") {
+      prefix = "  - ";
+    } else {
+      prefix = "    - ";
+    }
     tocLines.push(`${prefix}[${linkText}](#${uri})`);
     $(`<a name="${uri}"></a>`).insertBefore(linkElt);
   }

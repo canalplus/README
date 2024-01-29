@@ -1,18 +1,19 @@
-import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
-import parseDocConfigs, {
-  ParsedDocConfig,
-  LogoInformation,
-  LocalDocInformation,
-} from "./parse_doc_configs.js";
+import { fileURLToPath } from "url";
+import { promisify } from "util";
 import createDocumentationPage from "./create_documentation_page.js";
 import generateHeaderHtml from "./generate_header_html.js";
 import generatePageListHtml from "./generate_page_list_html.js";
 import generateSidebarHtml from "./generate_sidebar_html.js";
+import type { FileSearchIndex } from "./get_search_data_for_content.js";
+import parseDocConfigs from "./parse_doc_configs.js";
+import type {
+  ParsedDocConfig,
+  LogoInformation,
+  LocalDocInformation,
+} from "./parse_doc_configs.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
-import { FileSearchIndex } from "./get_search_data_for_content.js";
-import { fileURLToPath } from "url";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,11 +23,9 @@ async function createDirIfDoesntExist(dir: string) {
     try {
       await mkdirParent(dir);
     } catch (err) {
-      const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
-      console.error(
-        `Error: Could not create "${dir}" directory: ${srcMessage}`,
-      );
-      process.exit(1);
+      const srcMessage =
+        ((err as { message: string }) ?? {}).message ?? "Unknown error";
+      throw new Error(`Could not create "${dir}" directory: ${srcMessage}`);
     }
   }
 }
@@ -57,7 +56,7 @@ export interface DocumentationCreationOptions {
 export default async function createDocumentation(
   baseInDir: string,
   baseOutDir: string,
-  options: DocumentationCreationOptions = {},
+  options: DocumentationCreationOptions = {}
 ): Promise<void> {
   let cssOutputPaths: string[] = [];
 
@@ -70,7 +69,7 @@ export default async function createDocumentation(
     if ("css" in options && Array.isArray(options.css)) {
       // Copy CSS files
       const { css } = options;
-      cssFiles.push(...css.filter((path: unknown) => typeof path === "string"));
+      cssFiles.push(...css.filter((p: unknown) => typeof p === "string"));
     }
 
     cssOutputPaths = cssFiles.map((cssFilepath: string) => {
@@ -81,7 +80,7 @@ export default async function createDocumentation(
     await Promise.all(
       cssFiles.map(async (cssInput: string, i: number) => {
         await promisify(fs.copyFile)(cssInput, cssOutputPaths[i]);
-      }),
+      })
     );
   }
 
@@ -92,14 +91,14 @@ export default async function createDocumentation(
     path.join(currentDir, "scripts/script.js"),
   ];
   const scriptOutputPaths = scripts.map((s) =>
-    path.join(scriptOutputDir, path.basename(s)),
+    path.join(scriptOutputDir, path.basename(s))
   );
 
   await createDirIfDoesntExist(scriptOutputDir);
   await Promise.all(
     scripts.map(async (s, i) => {
       await promisify(fs.copyFile)(s, scriptOutputPaths[i]);
-    }),
+    })
   );
 
   // Construct tree listing categories, pages, and relations between them.
@@ -131,7 +130,7 @@ export default async function createDocumentation(
               }
               return acc3;
             },
-            acc2,
+            acc2
           );
         } else {
           if (pageInfo.inputFile !== undefined) {
@@ -140,7 +139,7 @@ export default async function createDocumentation(
         }
         return acc2;
       },
-      acc,
+      acc
     );
   }, {});
 
@@ -213,11 +212,13 @@ export default async function createDocumentation(
   try {
     const searchIndexLoc = path.join(
       path.resolve(baseOutDir),
-      "searchIndex.json",
+      "searchIndex.json"
     );
     await promisify(fs.writeFile)(searchIndexLoc, JSON.stringify(searchIndex));
   } catch (err) {
-    const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
+    const srcMessage =
+      ((err as { message: string }) ?? {}).message ?? "Unknown error";
+    // eslint-disable-next-line no-console
     console.error(`Error: Could not create search index file: ${srcMessage}`);
   }
 }
@@ -281,7 +282,7 @@ async function prepareAndCreateDocumentationPage({
     config.links,
     linkIdx,
     pageIdxs,
-    outputFile,
+    outputFile
   );
   const navBarHtml = generateHeaderHtml(config, linkIdx, outputFile, logoInfo);
   const pages = link.pages ?? [];
@@ -289,7 +290,7 @@ async function prepareAndCreateDocumentationPage({
     pages,
     pageIdxs,
     outputFile,
-    logoInfo,
+    logoInfo
   );
 
   let prevPageConfig = null;
@@ -317,10 +318,10 @@ async function prepareAndCreateDocumentationPage({
       : getRelativePageInfo(nextPageConfig, outputFile);
 
   const cssUrls = cssOutputPaths.map((cssOutput) =>
-    toUriCompatibleRelativePath(cssOutput, outDir),
+    toUriCompatibleRelativePath(cssOutput, outDir)
   );
   const scriptUrls = scriptOutputPaths.map((s) =>
-    toUriCompatibleRelativePath(s, outDir),
+    toUriCompatibleRelativePath(s, outDir)
   );
 
   // add link translation to options
@@ -353,7 +354,7 @@ async function prepareAndCreateDocumentationPage({
 function linkTranslatorFactory(
   inputFile: string,
   outputDir: string,
-  fileDict: Partial<Record<string, string>>,
+  fileDict: Partial<Record<string, string>>
 ): (link: string) => string | undefined {
   /**
    * Convert links to files that will be converted to the links of the
@@ -376,6 +377,7 @@ function linkTranslatorFactory(
 
     const translation = fileDict[normalizedLink];
     if (translation === undefined) {
+      // eslint-disable-next-line no-console
       console.warn(
         "WARNING: Local link not found.\n",
         "File:",
@@ -383,19 +385,18 @@ function linkTranslatorFactory(
         "\n",
         "Link:",
         link,
-        "\n",
+        "\n"
       );
     }
     return translation !== undefined
       ? toUriCompatibleRelativePath(translation, outputDir) + anchor
-      : // TODO do something better?
-        undefined;
+      : undefined;
   };
 }
 
 function getRelativePageInfo(
   pageConfig: LocalDocInformation,
-  currentPath: string,
+  currentPath: string
 ): {
   name: string;
   link: string;
@@ -410,7 +411,7 @@ function getRelativePageInfo(
   }
   const relativeHref = toUriCompatibleRelativePath(
     pOutputFile,
-    path.dirname(currentPath),
+    path.dirname(currentPath)
   );
   return { name: pDisplayName, link: relativeHref };
 }
@@ -418,7 +419,7 @@ function getRelativePageInfo(
 async function copyFileToOutputDir(
   filePathFromInputDir: string,
   inputDir: string,
-  outputDir: string,
+  outputDir: string
 ) {
   const inputPath = path.join(inputDir, filePathFromInputDir);
   const outputPath = path.join(outputDir, filePathFromInputDir);
@@ -427,11 +428,11 @@ async function copyFileToOutputDir(
     try {
       await mkdirParent(path.dirname(outputPath));
     } catch (err) {
-      const srcMessage = ((err as any) ?? {}).message ?? "Unknown error";
-      console.error(
-        `Error: Could not create "${outputPath}" directory: ${srcMessage}`,
+      const srcMessage =
+        ((err as { message: string }) ?? {}).message ?? "Unknown error";
+      throw new Error(
+        `Could not create "${outputPath}" directory: ${srcMessage}`
       );
-      process.exit(1);
     }
   }
   const doesOutFileExist = await promisify(fs.exists)(outputPath);

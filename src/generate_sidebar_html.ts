@@ -1,7 +1,10 @@
 import * as path from "path";
 import { encode } from "html-entities";
+import type {
+  LocalDocInformation,
+  LogoInformation,
+} from "./parse_doc_configs.js";
 import { toUriCompatibleRelativePath } from "./utils.js";
-import { LocalDocInformation, LogoInformation } from "./parse_doc_configs.js";
 
 /**
  * Construct HTML element, as a string, which corresponds to the sidebar for
@@ -16,7 +19,7 @@ export default function generateSidebarHtml(
   pages: LocalDocInformation[],
   currentPageIndexes: number[],
   currentPath: string,
-  logoInfo: LogoInformation | null,
+  logoInfo: LogoInformation | null
 ): string {
   const sidebarHeaderHtml = constructSidebarHeaderHtml(logoInfo);
   const links = pages
@@ -36,7 +39,7 @@ export default function generateSidebarHtml(
           `<div class="sidebar-item sidebar-item-group${
             isActive
               ? " active"
-              : "" + (isActive || p.defaultOpen ? " opened" : "")
+              : "" + (isActive || p.defaultOpen === true ? " opened" : "")
           }">` +
           encode(p.displayName) +
           "</div>" +
@@ -57,14 +60,14 @@ export default function generateSidebarHtml(
 
   function generateLiForPage(
     p: LocalDocInformation,
-    isActive: boolean,
+    isActive: boolean
   ): string {
     if (p.outputFile === undefined) {
       return "";
     }
     const relativeUri = toUriCompatibleRelativePath(
       p.outputFile,
-      path.dirname(currentPath),
+      path.dirname(currentPath)
     );
     const activeClass = isActive ? " active" : "";
     const cleanedHref = encode(relativeUri);
@@ -84,7 +87,7 @@ export default function generateSidebarHtml(
  */
 function constructSidebarHeaderHtml(logoInfo: LogoInformation | null): string {
   let sidebarHeaderHtml = `<div class="sidebar-header">`;
-  if (logoInfo != null) {
+  if (logoInfo !== null && logoInfo !== undefined) {
     let hasLink = false;
     if (typeof logoInfo.link === "string") {
       hasLink = true;

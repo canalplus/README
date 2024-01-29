@@ -1,11 +1,11 @@
 import * as path from "path";
 import { encode } from "html-entities";
-import { toUriCompatibleRelativePath, getGithubSvg } from "./utils.js";
-import {
+import type {
   LogoInformation,
   ParsedDocConfig,
   VersionInformation,
 } from "./parse_doc_configs.js";
+import { toUriCompatibleRelativePath, getGithubSvg } from "./utils.js";
 
 /**
  * Construct HTML element, as a string, which corresponds to the header for
@@ -29,12 +29,12 @@ export default function generateHeaderHtml(
 
   const linksHtml = links
     .map((l, i) => {
-      const customClass =
-        i === linksRightIndex
-          ? " first-right"
-          : i === linksRightIndex - 1
-            ? " last-left"
-            : "";
+      let customClass = "";
+      if (i === linksRightIndex) {
+        customClass = " first-right";
+      } else if (i === linksRightIndex - 1) {
+        customClass = " last-left";
+      }
       switch (l.type) {
         case "local-doc": {
           if (l.firstPage === undefined) {

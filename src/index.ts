@@ -3,15 +3,24 @@
 import { realpathSync } from "fs";
 import * as process from "process";
 import { pathToFileURL } from "url";
-import createDocumentation, {
-  DocumentationCreationOptions,
-} from "./create_documentation.js";
+import type { DocumentationCreationOptions } from "./create_documentation.js";
+import createDocumentation from "./create_documentation.js";
 import currentReadmeVersion from "./version.js";
 
 if (wasCalledAsScript()) {
   const args = processArgs();
-  function main(): Promise<void> {
-    return createDocumentation(args.baseInDir, args.baseOutDir, args.options);
+  function main(): void {
+    createDocumentation(args.baseInDir, args.baseOutDir, args.options).catch(
+      (err) => {
+        const srcMessage =
+          ((err as { message: string }) ?? {}).message ?? "Unknown error";
+        // eslint-disable-next-line no-console
+        console.error(
+          "ERROR: failed to generated documentation: " + srcMessage
+        );
+        process.exit(1);
+      }
+    );
   }
   main();
 }
@@ -109,7 +118,7 @@ function processArgs(): {
     console.error(
       "Error: The documentation generator needs at least " +
         "the input directory (behind an `-i` flag) and the output directory" +
-        " (behind an `-o` flag) but at least one of them was missing.",
+        " (behind an `-o` flag) but at least one of them was missing."
     );
     process.exit(1);
   }
@@ -137,7 +146,7 @@ Options:
   -v, --version            Display the current version of README
   -i, --input              [Mandatory] Root directory where your documentation source files are.
   -o, --output             [Mandatory] Destination directory where your HTML documentation will be created.
-  -p, --project-version    [Optional] Indicate your current project's version`,
+  -p, --project-version    [Optional] Indicate your current project's version`
     /* eslint-enable indent */
   );
   /* eslint-enable no-console */

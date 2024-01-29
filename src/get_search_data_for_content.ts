@@ -1,4 +1,5 @@
-import { AnyNode, load } from "cheerio";
+import type { AnyNode} from "cheerio";
+import { load } from "cheerio";
 
 export interface FileSearchIndex {
   h1: string | undefined;
@@ -28,22 +29,21 @@ export default function getSearchDataForContent(
   let currentH1Anchor: string | undefined;
   let currentH2Anchor: string | undefined;
   let currentH3Anchor: string | undefined;
-  let currentBody: string[] = [];
+  const currentBody: string[] = [];
   let currentLevel: string | undefined;
   let lastAnchor: AnyNode | undefined;
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     switch (child.name.toLowerCase()) {
       case "a":
+        // TODO That's pretty ugly but it works for now.
+        // Find better solution
         lastAnchor = children[i];
         break;
       case "h1":
         anounceLastElement();
         currentH1 = $(child).text();
 
-        // TODO We know that's the anchor's link is in the previous element.
-        // That's pretty ugly but it works for now.
-        // Find better solution
         currentH1Anchor = getAnchorName(lastAnchor);
         currentH2 = undefined;
         currentH2Anchor = undefined;
@@ -55,9 +55,6 @@ export default function getSearchDataForContent(
         anounceLastElement();
         currentH2 = $(child).text();
 
-        // TODO We know that's the anchor's link is in the previous element.
-        // That's pretty ugly but it works for now.
-        // Find better solution
         currentH2Anchor = getAnchorName(lastAnchor);
         currentH3 = undefined;
         currentH3Anchor = undefined;
@@ -66,9 +63,6 @@ export default function getSearchDataForContent(
       case "h3":
         anounceLastElement();
 
-        // TODO We know that's the anchor's link is in the previous element.
-        // That's pretty ugly but it works for now.
-        // Find better solution
         currentH3 = $(child).text();
         currentH3Anchor = getAnchorName(lastAnchor);
         currentLevel = "h3";

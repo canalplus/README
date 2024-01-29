@@ -12,6 +12,7 @@
     "doc": "node build/index.js -i doc -o doc-build -p `npm run --silent getVersion`",
     "generateVersionFile": "echo \"export default \\\"$(npm --silent run getVersion)\\\";\" > src/version.ts",
     "getVersion": "node -e \"console.log(require('./package.json').version)\"",
+    "lint": "eslint src/**",
     "fmt": "prettier src/* --write src"
   },
   "repository": {
@@ -29,6 +30,11 @@
   "devDependencies": {
     "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.11.8",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsdoc": "^48.0.4",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3"
   },

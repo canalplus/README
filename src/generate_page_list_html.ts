@@ -1,6 +1,6 @@
-import { encode } from "html-entities";
 import * as path from "path";
-import { LinkCategory } from "./parse_doc_configs.js";
+import { encode } from "html-entities";
+import type { LinkCategory } from "./parse_doc_configs.js";
 import { getGithubSvg, toUriCompatibleRelativePath } from "./utils.js";
 
 /**
@@ -15,7 +15,7 @@ export default function generatePageListHtml(
   links: LinkCategory[],
   currentLinkIdx: number,
   currentPageIndexes: number[],
-  currentPath: string,
+  currentPath: string
 ): string {
   const currentDir = path.dirname(currentPath);
   const linksHtml = links
@@ -45,7 +45,7 @@ export default function generatePageListHtml(
                   const pageActiveClasses = isPageActive ? " active" : "";
                   const relativeUri = toUriCompatibleRelativePath(
                     outputFile,
-                    currentDir,
+                    currentDir
                   );
                   return (
                     `<li class="page-list-item${pageActiveClasses}">` +
@@ -56,7 +56,9 @@ export default function generatePageListHtml(
                 }
                 const pageActiveClasses =
                   (isPageActive ? " active" : "") +
-                  (isPageActive || currentPage.defaultOpen ? " opened" : "");
+                  (isPageActive || currentPage.defaultOpen === true
+                    ? " opened"
+                    : "");
                 const pageGroupHtml =
                   `<li>` +
                   `<div class="page-list-item page-list-group${pageActiveClasses}">` +
@@ -70,18 +72,21 @@ export default function generatePageListHtml(
                         isPageActive && spIdx === currentPageIndexes[1]
                           ? " active"
                           : "";
-                      const { displayName, outputFile } = currentSubPage;
-                      if (outputFile === undefined) {
+                      const {
+                        displayName: subDisplayName,
+                        outputFile: subOutputFile,
+                      } = currentSubPage;
+                      if (subOutputFile === undefined) {
                         return "";
                       }
                       const relativeUri = toUriCompatibleRelativePath(
-                        outputFile,
-                        currentDir,
+                        subOutputFile,
+                        currentDir
                       );
                       return (
                         `<li class="page-list-item${spActiveClasses}">` +
                         `<a href="${encode(relativeUri)}">` +
-                        encode(displayName) +
+                        encode(subDisplayName) +
                         `</a></li>`
                       );
                     })
