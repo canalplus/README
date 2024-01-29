@@ -1,0 +1,157 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><link rel="stylesheet" href="../../styles/style.css"/><link rel="stylesheet" href="../../styles/code.css"/><title>3 - Page Listing</title><link rel="icon" type="image/png" href="../../assets/img/favicon.png"></head><body class="no-js"><script type="text/javascript">document.body.className = "";window.rootUrl = "../..";</script><div class="page-wrapper"><nav class="navbar-parent"><div class="navbar-wrapper"><div class="navbar-items"><button aria-label="Open website index" class="hamburger-opener"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="logo-link" href="https://github.com/canalplus/README"><img alt="Logo" class="navbar-item navbar-item-logo" src="../../assets/img/logo.png" /></a><a class="navbar-item navbar-active hideable"href="../Home.html">Getting Started</a>
+<a class="navbar-item hideable"href="../../API/CLI.html">API</a>
+<span class="navbar-item search-icon last-left"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><title>search</title><path d="M19 17l-5.15-5.15a7 7 0 1 0-2 2L17 19zM3.5 8A4.5 4.5 0 1 1 8 12.5 4.5 4.5 0 0 1 3.5 8z"/><script xmlns=""/></svg></span>
+<a aria-label="Link to repository" class="navbar-item first-right github-link hideable" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a>
+<span class="navbar-item"><span class="version-item">version: 0.4.0</span></span></div></div> </nav><aside class="sidebar-parent"><div class="sidebar-header"><a href="https://github.com/canalplus/README"><img alt="logo" class="sidebar-header-logo" src="../../assets/img/logo.png" /></a></div><div class="sidebar-wrapper"><div class="sidebar-items"><li class="sidebar-item"><a class="sidebar-link" href="../Home.html">README Overview</a></li><li class="sidebar-item"><div class="sidebar-item sidebar-item-group active">Step by step guide</div><ul><li class="sidebar-item"><a class="sidebar-link" href="./Documentation_Files.html">1 - Documentation Files</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Configuration.html">2 - Configuration</a></li><li class="sidebar-item"><a class="sidebar-link active" href="./Page_Ordering.html">3 - Page Listing</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Run.html">4 - Run</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Serve.html">5 - Serve</a></li></ul></li><li class="sidebar-item"><a class="sidebar-link" href="../HTML_Page_Features.html">Features of the HTML pages</a></li></div></div></aside><div class="content-wrapper"><div class="content"><div id="search-wrapper"><input type="search" name="search" id="searchbar" placeholder="Search in this documentation" class="active" /><div id="search-results"></div></div><html><head></head><body><a name="page-listing"></a><h1>Page Listing</h1>
+<a name="overview"></a><h2>Overview</h2>
+<p>Your documentation pages should be inside the “Categories” directories you
+configured in <a href="./Configuration.html">your global configuration file</a> (as
+<code>local-doc</code> links inside either the <code>linksLeft</code> or the <code>linksRight</code> property of
+it).</p>
+<p>To let README know how to name your various documentation files and in which
+order they should be shown, you will now also have to add <code>.docConfig.json</code>
+files inside all the inner directories where your Markdown documentation pages
+are found.</p>
+<p>For example, let’s consider a case where files are put in a <code>doc</code> root
+directory:</p>
+<pre><code>doc                                  # Root directory
+│
+├── .docConfig.json                  # Global configuration
+│
+├── Getting_Started                  # "Getting Started" Category
+│   ├── .docConfig.json              # Local configuration (we'll see that here)
+│   ├── Steps                        # Page group
+│   │   ├── .docConfig.json          # Local configuration
+│   │   ├── Configuration.md
+│   │   ├── Documentation_Files.md
+│   │   ├── Page_Ordering.md
+│   │   ├── Run.md
+│   │   └── Serve.md
+│   ├── Home.md
+│   └── HTML_Page_features.md
+│
+└── API                              # Another Category, "API"
+    ├── .docConfig.json              # Local configuration
+    ├── CLI.md
+    └── ...
+</code></pre>
+<p>Note however that the syntax of those <code>.docConfig.json</code> files is different than
+the one of the global configuration, that’s what we’ll see here.</p>
+<a name="local-configurations-content"></a><h2>Local configurations content</h2>
+<p>Those “local” <code>.docConfig.json</code> just needs to be given:</p>
+<ul>
+<li>
+<p>The order in which documentation pages should be showned. This is achieved by
+listing those pages in a <code>pages</code> array property. Pages are listed from top to
+bottom.</p>
+</li>
+<li>
+<p>For each page, a link to the Markdown file containing the documentation you
+want to show, as well as the name with which it should be referred to.</p>
+</li>
+<li>
+<p>Optionally for page groups (directories), you can indicate if you want this
+page groups to be opened by default when going to the documentation.</p>
+<p>If not, the page group will only be opened if either the reader opened it, or
+if the current visualized page is inside that page group.</p>
+</li>
+</ul>
+<p>Here is a completely annotated example:</p>
+<pre><code class="language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-comment">// Documentation pages, that will be linked from top to bottom</span>
+  <span class="hljs-attr">"pages"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-comment">// Relative path to the markdown file.</span>
+      <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"./Home.md"</span><span class="hljs-punctuation">,</span>
+
+      <span class="hljs-comment">// Name actually displayed for the link to it on the generated HTML page</span>
+      <span class="hljs-attr">"displayName"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Welcome"</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-comment">// Relative path to a subdirectory</span>
+      <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"./Steps"</span><span class="hljs-punctuation">,</span>
+
+      <span class="hljs-comment">// Name actually displayed for this directory's title on the generated</span>
+      <span class="hljs-comment">// HTML page</span>
+      <span class="hljs-attr">"displayName"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Step by step guide"</span>
+
+      <span class="hljs-comment">// Optionally for page groups (when the path is a directory), you can</span>
+      <span class="hljs-comment">// set `defaultOpen` to `true` if you want the page group to be open</span>
+      <span class="hljs-comment">// by default.</span>
+      <span class="hljs-comment">// This property is set to false by default, meaning that page groups</span>
+      <span class="hljs-comment">// are closed by default.</span>
+      <span class="hljs-attr">"defaultOpen"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"./HTML_Page_features.md"</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">"displayName"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Features of the HTML pages"</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>You’ll have to add a <code>.docConfig.json</code> file in each directory in which
+documentation pages are found:</p>
+<ul>
+<li>
+<p>In the “Categories” directories (those behind a <code>local-doc</code> link in the global
+configuration)</p>
+</li>
+<li>
+<p>In all the page groups inside those directories (meaning: the subdirectories,
+which themselves had to be referenced in the <code>.docConfig.json</code> of the
+corresponding Category)</p>
+</li>
+</ul>
+<p>Let’s see again the example at the top of this page:</p>
+<pre><code>doc                                  # Root directory
+│
+├── .docConfig.json                  # Global configuration
+│
+├── Getting_Started                  # "Getting Started" Category
+│   ├── .docConfig.json              # Local configuration
+│   ├── Steps                        # Page group
+│   │   ├── .docConfig.json          # Local configuration
+│   │   ├── Configuration.md
+│   │   ├── Documentation_Files.md
+│   │   ├── Page_Ordering.md
+│   │   ├── Run.md
+│   │   └── Serve.md
+│   ├── Home.md
+│   └── HTML_Page_features.md
+│
+└── API                              # Another Category, "API"
+    ├── .docConfig.json              # Local configuration
+    ├── CLI.md
+    └── ...
+</code></pre>
+<p>You can see in this example that there are three “local configuration” files:</p>
+<ol>
+<li>
+<p>Inside the <code>doc/Getting_Started</code> Category directory</p>
+</li>
+<li>
+<p>Inside the <code>doc/Getting_Started/Steps</code> page group</p>
+</li>
+<li>
+<p>Inside the <code>doc/API</code> Category directory</p>
+</li>
+</ol>
+</body></html><nav class="next-previous-page-wrapper" aria-label="Navigate between pages"><div class="next-or-previous-page"><a class="next-or-previous-page-link" href="./Configuration.html"><div class="next-or-previous-page-link-label">Previous</div><div class="next-or-previous-page-link-name">2 - Configuration</div></a></div><div class="next-or-previous-page next-page"><a class="next-or-previous-page-link" href="./Run.html"><div class="next-or-previous-page-link-label">Next</div><div class="next-or-previous-page-link-name">4 - Run</div></a></div></nav></div><div class="tocbar-wrapper"><div class="tocbar"><p><a href="#page-listing">Page Listing</a></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#local-configurations-content">Local configurations content</a></li>
+</ul>
+</div></div></div></div><div class="hamburger-bar"><div class="hamburger-header"><span class="hamburger-title">Page List</span><button aria-label="Close website index" type="button" class="hamburger-bar-closer"><svg viewBox="0 0 15 15" width="21" height="21"><g stroke="black" stroke-width="1.2"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><ul class="page-list-wrapper"><li class="page-list-item"><div class="page-list-group opened active">Getting Started</div><ul class="page-list-cat-group"><li class="page-list-item"><a href="../Home.html">README Overview</a></li>
+<li><div class="page-list-item page-list-group active opened">Step by step guide</div><ul class="page-list-group-group"><li class="page-list-item"><a href="./Documentation_Files.html">1 - Documentation Files</a></li>
+<li class="page-list-item"><a href="./Configuration.html">2 - Configuration</a></li>
+<li class="page-list-item active"><a href="./Page_Ordering.html">3 - Page Listing</a></li>
+<li class="page-list-item"><a href="./Run.html">4 - Run</a></li>
+<li class="page-list-item"><a href="./Serve.html">5 - Serve</a></li></ul></li>
+<li class="page-list-item"><a href="../HTML_Page_Features.html">Features of the HTML pages</a></li></ul></li>
+<li class="page-list-item"><div class="page-list-group">API</div><ul class="page-list-cat-group"><li class="page-list-item"><a href="../../API/CLI.html">CLI API</a></li>
+<li class="page-list-item"><a href="../../API/JS_API.html">JavaScript API</a></li>
+<li class="page-list-item"><a href="../../API/Documentation_Pages.html">Documentation Pages</a></li>
+<li class="page-list-item"><a href="../../API/Configuration.html">Configuration</a></li></ul></li>
+
+<li class="page-list-item"><a aria-label="Link to repository" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a></li>
+</ul></div><script type="text/javascript" src="../../scripts/lunr.js" charset="utf-8"></script><script type="text/javascript" src="../../scripts/script.js" charset="utf-8"></script></body></html>

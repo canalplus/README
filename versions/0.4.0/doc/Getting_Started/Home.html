@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><link rel="stylesheet" href="../styles/style.css"/><link rel="stylesheet" href="../styles/code.css"/><title>README Overview</title><link rel="icon" type="image/png" href="../assets/img/favicon.png"></head><body class="no-js"><script type="text/javascript">document.body.className = "";window.rootUrl = "..";</script><div class="page-wrapper"><nav class="navbar-parent"><div class="navbar-wrapper"><div class="navbar-items"><button aria-label="Open website index" class="hamburger-opener"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="logo-link" href="https://github.com/canalplus/README"><img alt="Logo" class="navbar-item navbar-item-logo" src="../assets/img/logo.png" /></a><a class="navbar-item navbar-active hideable"href="./Home.html">Getting Started</a>
+<a class="navbar-item hideable"href="../API/CLI.html">API</a>
+<span class="navbar-item search-icon last-left"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><title>search</title><path d="M19 17l-5.15-5.15a7 7 0 1 0-2 2L17 19zM3.5 8A4.5 4.5 0 1 1 8 12.5 4.5 4.5 0 0 1 3.5 8z"/><script xmlns=""/></svg></span>
+<a aria-label="Link to repository" class="navbar-item first-right github-link hideable" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a>
+<span class="navbar-item"><span class="version-item">version: 0.4.0</span></span></div></div> </nav><aside class="sidebar-parent"><div class="sidebar-header"><a href="https://github.com/canalplus/README"><img alt="logo" class="sidebar-header-logo" src="../assets/img/logo.png" /></a></div><div class="sidebar-wrapper"><div class="sidebar-items"><li class="sidebar-item"><a class="sidebar-link active" href="./Home.html">README Overview</a></li><li class="sidebar-item"><div class="sidebar-item sidebar-item-group opened">Step by step guide</div><ul><li class="sidebar-item"><a class="sidebar-link" href="./Steps/Documentation_Files.html">1 - Documentation Files</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Steps/Configuration.html">2 - Configuration</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Steps/Page_Ordering.html">3 - Page Listing</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Steps/Run.html">4 - Run</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Steps/Serve.html">5 - Serve</a></li></ul></li><li class="sidebar-item"><a class="sidebar-link" href="./HTML_Page_Features.html">Features of the HTML pages</a></li></div></div></aside><div class="content-wrapper"><div class="content"><div id="search-wrapper"><input type="search" name="search" id="searchbar" placeholder="Search in this documentation" class="active" /><div id="search-results"></div></div><html><head></head><body><a name="readme"></a><h1>README</h1>
+<a name="overview"></a><h2>Overview</h2>
+<p>README is a very simple HTML documentation generator whose goal is to be as
+pain-free as possible to put in place, maintain and navigate.</p>
+<p>When relying on README, all you need to do is:</p>
+<ol>
+<li>
+<p>To write your documentation files in the same Markdown format you’re used to
+(the full ubiquitous CommonMark syntax is handled, with no added special
+syntax).</p>
+<p>Note that links, including those between Markdown files, are handled, as well
+as things like embedded image, video and audio resources.</p>
+</li>
+<li>
+<p>Put them in directories following a file tree architecture reflecting your
+wanted HTML documentation (categories in different directories, page groups
+as pages in the same subdirectory).</p>
+</li>
+<li>
+<p>Add <code>.docConfig.json</code> files in the resulting directories and sub-directories
+to set-up configuration and indicate the pages’ ordering.</p>
+</li>
+</ol>
+<p>Then you can run README on it to generate static HTML files which can directly
+be served as your documentation. That’s it!</p>
+<a name="installation"></a><h2>Installation</h2>
+<p>README is installable through your favorite node package manager (npm / yarn /
+pnpm) by installing the <code>@canalplus/readme.doc</code> package:</p>
+<pre><code class="language-sh"><span class="hljs-comment"># through npm</span>
+npm install @canalplus/readme.doc --save-dev
+
+<span class="hljs-comment"># or through yarn</span>
+yarn add @canalplus/readme.doc --dev
+</code></pre>
+<p>You should then be able to run it by referencing through its <code>readme.doc</code> name
+in a <code>package.json</code> script or through <code>npx</code>.</p>
+<p>To ensure the <code>readme.doc</code> is accessible, you can try running it with the <code>-v</code>
+flag and see if the right version is outputed:</p>
+<pre><code class="language-sh"><span class="hljs-comment"># Outputs README version</span>
+npx --no -- readme.doc -v
+
+<span class="hljs-comment"># Note: The `--no --` part in that npx command is there to ensure that README</span>
+<span class="hljs-comment"># has been installed locally with success.</span>
+<span class="hljs-comment"># If you see the expected version outputed, it is correctly installed and</span>
+<span class="hljs-comment"># it is equivalent to just calling `npx readme.doc -v`.</span>
+</code></pre>
+<a name="usage"></a><h2>Usage</h2>
+<p>Then producing your HTML documentation pages is straightforward.</p>
+<p>Before going deep into all steps one by one, here is a brief description for
+each one of them:</p>
+<ol>
+<li>
+<p><strong>Documentation Files</strong>: Write documentation files in Markdown in a file tree
+architecture respecting the same structure you want in your HTML
+documentation (e.g. <code>Getting Started</code> pages in a given directory, <code>API</code> pages
+in another etc.).</p>
+</li>
+<li>
+<p><strong>Configuration</strong>: Add a <code>.docConfig.json</code> file, setting the documentation’s
+global configuration, in your documentation’s root directory</p>
+</li>
+<li>
+<p><strong>Page Listing</strong>: Add <code>.docConfig.json</code> files in each sub-directories to set
+the order of documentation pages as well as their name.</p>
+</li>
+<li>
+<p><strong>Run</strong>: Run the <code>readme.doc</code> command.</p>
+</li>
+<li>
+<p><strong>Serve</strong>: Serve the corresponding generated HTML pages.</p>
+</li>
+</ol>
+</body></html><nav class="next-previous-page-wrapper" aria-label="Navigate between pages"><div class="next-or-previous-page"></div><div class="next-or-previous-page next-page"><a class="next-or-previous-page-link" href="./Steps/Documentation_Files.html"><div class="next-or-previous-page-link-label">Next</div><div class="next-or-previous-page-link-name">1 - Documentation Files</div></a></div></nav></div><div class="tocbar-wrapper"><div class="tocbar"><p><a href="#readme">README</a></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a></li>
+</ul>
+</div></div></div></div><div class="hamburger-bar"><div class="hamburger-header"><span class="hamburger-title">Page List</span><button aria-label="Close website index" type="button" class="hamburger-bar-closer"><svg viewBox="0 0 15 15" width="21" height="21"><g stroke="black" stroke-width="1.2"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><ul class="page-list-wrapper"><li class="page-list-item"><div class="page-list-group opened active">Getting Started</div><ul class="page-list-cat-group"><li class="page-list-item active"><a href="./Home.html">README Overview</a></li>
+<li><div class="page-list-item page-list-group opened">Step by step guide</div><ul class="page-list-group-group"><li class="page-list-item"><a href="./Steps/Documentation_Files.html">1 - Documentation Files</a></li>
+<li class="page-list-item"><a href="./Steps/Configuration.html">2 - Configuration</a></li>
+<li class="page-list-item"><a href="./Steps/Page_Ordering.html">3 - Page Listing</a></li>
+<li class="page-list-item"><a href="./Steps/Run.html">4 - Run</a></li>
+<li class="page-list-item"><a href="./Steps/Serve.html">5 - Serve</a></li></ul></li>
+<li class="page-list-item"><a href="./HTML_Page_Features.html">Features of the HTML pages</a></li></ul></li>
+<li class="page-list-item"><div class="page-list-group">API</div><ul class="page-list-cat-group"><li class="page-list-item"><a href="../API/CLI.html">CLI API</a></li>
+<li class="page-list-item"><a href="../API/JS_API.html">JavaScript API</a></li>
+<li class="page-list-item"><a href="../API/Documentation_Pages.html">Documentation Pages</a></li>
+<li class="page-list-item"><a href="../API/Configuration.html">Configuration</a></li></ul></li>
+
+<li class="page-list-item"><a aria-label="Link to repository" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a></li>
+</ul></div><script type="text/javascript" src="../scripts/lunr.js" charset="utf-8"></script><script type="text/javascript" src="../scripts/script.js" charset="utf-8"></script></body></html>

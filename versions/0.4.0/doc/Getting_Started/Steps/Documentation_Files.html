@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><link rel="stylesheet" href="../../styles/style.css"/><link rel="stylesheet" href="../../styles/code.css"/><title>1 - Documentation Files</title><link rel="icon" type="image/png" href="../../assets/img/favicon.png"></head><body class="no-js"><script type="text/javascript">document.body.className = "";window.rootUrl = "../..";</script><div class="page-wrapper"><nav class="navbar-parent"><div class="navbar-wrapper"><div class="navbar-items"><button aria-label="Open website index" class="hamburger-opener"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="logo-link" href="https://github.com/canalplus/README"><img alt="Logo" class="navbar-item navbar-item-logo" src="../../assets/img/logo.png" /></a><a class="navbar-item navbar-active hideable"href="../Home.html">Getting Started</a>
+<a class="navbar-item hideable"href="../../API/CLI.html">API</a>
+<span class="navbar-item search-icon last-left"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><title>search</title><path d="M19 17l-5.15-5.15a7 7 0 1 0-2 2L17 19zM3.5 8A4.5 4.5 0 1 1 8 12.5 4.5 4.5 0 0 1 3.5 8z"/><script xmlns=""/></svg></span>
+<a aria-label="Link to repository" class="navbar-item first-right github-link hideable" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a>
+<span class="navbar-item"><span class="version-item">version: 0.4.0</span></span></div></div> </nav><aside class="sidebar-parent"><div class="sidebar-header"><a href="https://github.com/canalplus/README"><img alt="logo" class="sidebar-header-logo" src="../../assets/img/logo.png" /></a></div><div class="sidebar-wrapper"><div class="sidebar-items"><li class="sidebar-item"><a class="sidebar-link" href="../Home.html">README Overview</a></li><li class="sidebar-item"><div class="sidebar-item sidebar-item-group active">Step by step guide</div><ul><li class="sidebar-item"><a class="sidebar-link active" href="./Documentation_Files.html">1 - Documentation Files</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Configuration.html">2 - Configuration</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Page_Ordering.html">3 - Page Listing</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Run.html">4 - Run</a></li><li class="sidebar-item"><a class="sidebar-link" href="./Serve.html">5 - Serve</a></li></ul></li><li class="sidebar-item"><a class="sidebar-link" href="../HTML_Page_Features.html">Features of the HTML pages</a></li></div></div></aside><div class="content-wrapper"><div class="content"><div id="search-wrapper"><input type="search" name="search" id="searchbar" placeholder="Search in this documentation" class="active" /><div id="search-results"></div></div><html><head></head><body><a name="documentation-files"></a><h1>Documentation Files</h1>
+<a name="overview"></a><h2>Overview</h2>
+<p>In this page, we’re going to focus on how you will want to write your
+documentation files and where to place them in your project, depending on the
+wanted resulting documentation.</p>
+<a name="format"></a><h2>Format</h2>
+<a name="commonmark-markdown"></a><h3>CommonMark Markdown</h3>
+<p>All documentation pages you want to generate HTML pages for have to written in
+the Markdown format (which generally ends with the <code>.md</code> extension), more
+specifically respecting the
+<a href="https://spec.commonmark.org/0.30">CommonMark specification</a>, which is its most
+popular specified implementation.</p>
+<p>If you’re not familiar with the Markdown format, you can
+<a href="https://commonmark.org/help/tutorial/">follow the CommonMark tutorial linked here</a>.</p>
+<a name="about-relying-on-plain-markdown-files"></a><h3>About relying on plain Markdown files</h3>
+<p>Markdown files have the huge advantages of being both human-readable and
+compatible to a large panel of developer-facing applications and tools. It can
+also be noted than most forges (GitHub, GitLab, SourceHut, BitBucket etc.)
+provide a very good support of the format natively, making it one of the
+strongest format candidate for developer-oriented documentation files.</p>
+<p>Though README generates HTML files, the source Markdown files are also intended
+to be readable as is, by any of those tools, which is why we renounce at the
+idea of adding any specific syntax.</p>
+<p>Let’s consider your projects’ developers as an example. They probably will end
+up reading much more often the source Markdown files (e.g. when re-checking some
+API details in the documentation) than viewing it through its URL in a web
+browser. And this can be extrapolated to some users as well.</p>
+<a name="content"></a><h2>Content</h2>
+<a name="how-much-information-to-put-in-it"></a><h3>How much information to put in it</h3>
+<p>Each of the Markdown files you’ll write will correspond to a single
+documentation page once transformed by README. You should keep that in mind when
+writing your documentation to get a feeling of what information to put in a file
+and when another file should be created instead.</p>
+<p>For example, this <code>Documentation Files</code> documentation page is written in a
+single Markdown source page, here: TODO</p>
+<p>As you can see, its content is just straightforward human-readable Markdown,
+with <a href="https://spec.commonmark.org/0.30/#atx-headings">headings</a>,
+<a href="https://spec.commonmark.org/0.30/#links">links</a>,
+<a href="https://spec.commonmark.org/0.30/#code-spans">code</a>,
+<a href="https://spec.commonmark.org/0.30/#emphasis-and-strong-emphasis">emphasis</a> and
+all of the other features you may be used to if you relied on Markdown before.</p>
+<a name="table-of-contents"></a><h3>Table of contents</h3>
+<p>You may have noticed that there is a table of contents in the right-side of this
+page.</p>
+<p>This table of content is automatically generated by README by relying on
+“headings” (those either defined by <code>#</code> characters or
+<a href="https://spec.commonmark.org/0.30/#setext-headings">setext headings</a>) declared
+in your documentation files.</p>
+<p>Levels 1 (a single <code>#</code> or a <code>=====</code>-style setext heading), 2 (2 <code>#</code> characters
+or <code>-----</code>-style setext heading) and 3 (3 <code>#</code> characters) are all considered to
+generate it. For example this page has <code>Documentation Files</code> as its only level 1
+headers, multiple level 2 headers such as <code>Overview</code> and <code>Format</code>, and multiple
+level 3 headers such as <code>CommonMark Markdown</code> and <code>Code blocks</code>.</p>
+<a name="embedded-html"></a><h3>Embedded HTML</h3>
+<p>As permitted by the CommonMark specification, you can embed HTML in your
+documentation pages to have close to endless ways of expressing a layout. For
+example:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"text-align: center; border: 1px dashed #444"</span>&gt;</span>
+  Some <span class="hljs-tag">&lt;<span class="hljs-name">i</span>&gt;</span>embedded HTML<span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span> block
+<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</code></pre>
+<p>Will render as:</p>
+<p style="text-align: center; border: 1px dashed #444">
+    Some <i>embedded HTML</i> block
+</p>
+<p>The treatment of HTML follows the exact rules of the
+<a href="https://spec.commonmark.org/0.30/#html-blocks">CommonMark specification on HTML blocks</a>
+so you should rest assured that most other tools (e.g. GitLab, GitHub, Prettier,
+editor extensions…) should have no problem handling them.</p>
+<p>Still, keep in mind that embedded raw HTML blocks are harder to read when the
+original markdown is viewed than the simpler Markdown syntax.</p>
+<a name="code-blocks"></a><h3>Code blocks</h3>
+<p>Again, code blocks syntax just follows here the CommonMark specification. You
+may already be used to using backticks (`) for
+<a href="https://spec.commonmark.org/0.30/#code-span">“code spans”</a> and triple backticks
+for <a href="https://spec.commonmark.org/0.30/#fenced-code-blocks">“code fences”</a>.</p>
+<p>For example: “`this`” will be transformed into “<code>this</code>”, and that multiline
+code:</p>
+<p style="margin-left: 20px">
+```<br>
+function print() {<br>
+    console.log("Hello world!");<br>
+}<br>
+```
+</p>
+<p>Will be transformed into:</p>
+<pre><code>function print() {
+    console.log("Hello world!");
+}
+</code></pre>
+<p>README also includes a syntax highlighter,
+<a href="https://highlightjs.org/">highlight.js</a>, which will automatically hightlight
+your code based on the language you associated to your code fence.</p>
+<p>For example <em>(notice the <code>js</code> mention, which can also be written as <code>javascript</code>
+by the way)</em>:</p>
+<p style="margin-left: 20px">
+```js<br>
+function print() {<br>
+    console.log("Hello world!");<br>
+}<br>
+```
+</p>
+<p>Will be transformed into:</p>
+<pre><code class="language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">print</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"Hello world!"</span>);
+}
+</code></pre>
+<a name="links-to-other-markdown-files"></a><h3>Links to other markdown files</h3>
+<p>You can add a link to another Markdown file in your documentation pages in which
+case the link will be automatically translated to a link to the corresponding
+documentation page in the HTML output.</p>
+<p>For example:</p>
+<pre><code class="language-md">Here's a [<span class="hljs-string">link to the configuration page</span>](<span class="hljs-link">./Configuration.md</span>).
+</code></pre>
+<p>Will be translated to:</p>
+<blockquote>
+<p>Here’s a <a href="./Configuration.html">link to the configuration page</a>.</p>
+</blockquote>
+<p>Note: If a linked relative Markdown file is not found by README, it will output
+a warning at the <a href="./Run.html">Run step</a>. This allows to make sure that you wrote
+your links between documentation pages correctly.</p>
+<a name="link-anchors"></a><h3>Link anchors</h3>
+<p>You can also directly link to a heading (from level 1 to 3), by adding its name
+in the URL’s fragment (after a <code>#</code> character).</p>
+<p>To be compatible with URL fragments, the header names are actually updated in a
+simple way:</p>
+<ol>
+<li>
+<p>All spaces at the beginning or end of the title are removed.</p>
+</li>
+<li>
+<p>Remaining spaces are replaced by a dash (<code>-</code>).</p>
+</li>
+<li>
+<p>Every characters not part of any of those sets:</p>
+<ul>
+<li>Upper-case latin letters from A to Z</li>
+<li>Lower-case latin letters from a to z</li>
+<li>dashes (<code>-</code>)</li>
+<li>underscores (<code>_</code>)</li>
+</ul>
+<p>Will be removed when put as an anchor.</p>
+</li>
+<li>
+<p>All remaining upper-case aphabetical characters (A to Z), is transformed to a
+lower-case character (a to z).</p>
+</li>
+</ol>
+<p>As such, if you want to link to the <code>Code blocks</code> chapter of this page, you can
+link to it like this: <code>[link](#code-blocks)</code> (we replaced the space by a dash
+character and set the title in lower case). Here’s the result for this example:
+<a href="#code-blocks">link</a></p>
+<p>To select a more complex example, to link an heading like this:
+<code>##    Bonne année à tous  </code>, you would write something like
+<code>[some link](#bonne-anne--tous)</code> (The ending space is removed, the middle spaces
+replaced by dashes, the <code>B</code> is transformed into lower-case <code>b</code> and both the <code>é</code>
+an <code>à</code> are removed).</p>
+<p>For most use-cases (and at least for english headings), doing anchor generation
+this way is generally compatible to how tools like GitHub and GitLab also
+generate their headings, leading to anchor links in Markdown files that are
+still functional in those tools.</p>
+<p>Duplicated headings in the same page should be avoided. If README see two
+conflicting anchors, it will add a numerical postfix starting with the second
+one encountered. If such scenarios is unavoidable, you may prefer to generate
+the documentation pages once to check the resulting anchor names before linking
+to it.</p>
+<p>Last but not least it is perfectly possible to link to an anchor in another
+Markdown page. As such, <code>[example](../Home.md#installation)</code> will directly jump
+to the <code>Installation</code> chapter of the <code>Home.html</code> page:
+<a href="../Home.html#installation">example</a>.</p>
+<a name="image-audio-and-video"></a><h3>Image, audio and video</h3>
+<p>When linking to a media resource, either through
+<a href="https://spec.commonmark.org/0.30/#images">Markdown syntax’s for images</a> or
+through embedded HTML elements, README will automatically copy the resouce so it
+is also accessible from the output directory.</p>
+<p>For example, I can insert an image by writing something like
+<code>![README logo](../../assets/img/logo.png "README")</code>, which will copy the image
+so it is visible in the HTML page.</p>
+<p>Likewise, media elements like <code>&lt;video src="../../assets/video/my_video.mp4" /&gt;</code>
+can be embedded in you markdown as HTML. The resource will also be copied by
+README into the output directory.</p>
+<p>README only copies local resources. You can also refer to online resources in
+your markdown files, in which case the resulting HTML will also refer to those
+same online resources without copying them locally.</p>
+<a name="file-and-directories-location"></a><h2>File and directories location</h2>
+<p>The location of the various directories containing documentation pages is
+important, as the file architecture will be reused by README to organize the
+generated HTML pages.</p>
+<p>All documentation pages should be put in a common root directory in your
+project. To take an example, let’s say that our root directory is <code>./doc</code> (from
+the root of our project).</p>
+<p>In that root directory, you want to put subdirectories corresponding to the
+“Categories” you’ll have. Categories are subsets of your documentations which
+you do not want to group together (for example in this documentation, categories
+are “Getting Started” and “API”). You do not need to name the directory the same
+way you want the category to be called in the resulting HTML documentation, this
+“display name” will be configurable in
+<a href="./Configuration.html">the Configuration step</a>.</p>
+<p>Inside that second level of directories (the “Category” ones), you can either
+put directly your Markdown documentation pages, or directories themselves
+containing Markdown documentation pages if you want to create multiple linked
+pages in a “page groups” (in the documentation you’re reading right now the
+“Step by step guide” is a page group for example). Once again, the name of those
+files and directories aren’t important as the name used for display in links
+will be configured elsewhere.</p>
+<p>Likewise, the order in which those files may be listed (alphabetically or
+otherwise) is unimportant. You’ll set-up configuration files in the next steps
+setting a clear ordering of those pages.</p>
+<p>Thus, taking in example the README documentation you’re reading right now,
+here’s how files have been organized (may be out-of-date):</p>
+<pre><code>doc                                  # Root directory
+│
+├── .docConfig.json                  # Global configuration (we'll see that later)
+│
+├── Getting_Started                  # "Getting Started" Category
+│   ├── .docConfig.json              # Local configuration (we'll see that later)
+│   ├── Steps                        # Page group
+│   │   ├── .docConfig.json          # Local configuration
+│   │   ├── Configuration.md
+│   │   ├── Documentation_Files.md   # The page you're reading right now
+│   │   ├── Page_Ordering.md
+│   │   ├── Run.md
+│   │   └── Serve.md
+│   ├── Home.md                      # The "README Overview" previous page
+│   └── HTML_Page_features.md
+│
+└── API                              # Another Category, "API"
+    ├── .docConfig.json              # Local configuration
+    ├── CLI.md
+    └── ...
+</code></pre>
+</body></html><nav class="next-previous-page-wrapper" aria-label="Navigate between pages"><div class="next-or-previous-page"><a class="next-or-previous-page-link" href="../Home.html"><div class="next-or-previous-page-link-label">Previous</div><div class="next-or-previous-page-link-name">README Overview</div></a></div><div class="next-or-previous-page next-page"><a class="next-or-previous-page-link" href="./Configuration.html"><div class="next-or-previous-page-link-label">Next</div><div class="next-or-previous-page-link-name">2 - Configuration</div></a></div></nav></div><div class="tocbar-wrapper"><div class="tocbar"><p><a href="#documentation-files">Documentation Files</a></p>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#format">Format</a>
+<ul>
+<li><a href="#commonmark-markdown">CommonMark Markdown</a></li>
+<li><a href="#about-relying-on-plain-markdown-files">About relying on plain Markdown files</a></li>
+</ul>
+</li>
+<li><a href="#content">Content</a>
+<ul>
+<li><a href="#how-much-information-to-put-in-it">How much information to put in it</a></li>
+<li><a href="#table-of-contents">Table of contents</a></li>
+<li><a href="#embedded-html">Embedded HTML</a></li>
+<li><a href="#code-blocks">Code blocks</a></li>
+<li><a href="#links-to-other-markdown-files">Links to other markdown files</a></li>
+<li><a href="#link-anchors">Link anchors</a></li>
+<li><a href="#image-audio-and-video">Image, audio and video</a></li>
+</ul>
+</li>
+<li><a href="#file-and-directories-location">File and directories location</a></li>
+</ul>
+</div></div></div></div><div class="hamburger-bar"><div class="hamburger-header"><span class="hamburger-title">Page List</span><button aria-label="Close website index" type="button" class="hamburger-bar-closer"><svg viewBox="0 0 15 15" width="21" height="21"><g stroke="black" stroke-width="1.2"><path d="M.75.75l13.5 13.5M14.25.75L.75 14.25"></path></g></svg></button></div><ul class="page-list-wrapper"><li class="page-list-item"><div class="page-list-group opened active">Getting Started</div><ul class="page-list-cat-group"><li class="page-list-item"><a href="../Home.html">README Overview</a></li>
+<li><div class="page-list-item page-list-group active opened">Step by step guide</div><ul class="page-list-group-group"><li class="page-list-item active"><a href="./Documentation_Files.html">1 - Documentation Files</a></li>
+<li class="page-list-item"><a href="./Configuration.html">2 - Configuration</a></li>
+<li class="page-list-item"><a href="./Page_Ordering.html">3 - Page Listing</a></li>
+<li class="page-list-item"><a href="./Run.html">4 - Run</a></li>
+<li class="page-list-item"><a href="./Serve.html">5 - Serve</a></li></ul></li>
+<li class="page-list-item"><a href="../HTML_Page_Features.html">Features of the HTML pages</a></li></ul></li>
+<li class="page-list-item"><div class="page-list-group">API</div><ul class="page-list-cat-group"><li class="page-list-item"><a href="../../API/CLI.html">CLI API</a></li>
+<li class="page-list-item"><a href="../../API/JS_API.html">JavaScript API</a></li>
+<li class="page-list-item"><a href="../../API/Documentation_Pages.html">Documentation Pages</a></li>
+<li class="page-list-item"><a href="../../API/Configuration.html">Configuration</a></li></ul></li>
+
+<li class="page-list-item"><a aria-label="Link to repository" href="https://github.com/canalplus/README"><svg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/></svg></a></li>
+</ul></div><script type="text/javascript" src="../../scripts/lunr.js" charset="utf-8"></script><script type="text/javascript" src="../../scripts/script.js" charset="utf-8"></script></body></html>
