@@ -6,7 +6,6 @@ import getSearchDataForContent, {
   FileSearchIndex,
 } from "./get_search_data_for_content.js";
 import convertMDToHTML from "./convert_MD_to_HMTL.js";
-import constructTableOfContents from "./construct_table_of_contents.js";
 import generatePageHtml from "./generate_page_html.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
@@ -87,9 +86,11 @@ export default async function createDocumentationPage({
     return;
   }
   const inputDir = path.dirname(inputFile);
-  const { content, tocMd, nbTocElements } = constructTableOfContents(data);
-
-  let contentHtml = await parseMD(content, inputDir, outputDir, linkTranslator);
+  let {
+    html: contentHtml,
+    tocMd,
+    nbTocElements,
+  } = await parseMD(data, inputDir, outputDir, linkTranslator);
   const searchData = getSearchDataForContent(contentHtml);
   searchIndex.push({
     file: outputUrlFromRoot,
@@ -217,10 +218,32 @@ async function parseMD(
   inputDir: string,
   outputDir: string,
   linkTranslator: ((link: string) => string | undefined) | null | undefined
-): Promise<string> {
+): Promise<{
+  /** HTML output */
+  html: string;
+  /** Table of contents in a Markdown list format. */
+  tocMd: string;
+  /** Number of elements in the table of content. */
+  nbTocElements: number;
+}> {
   // TODO I don't understand Cheerio/Jquery here, that's plain ugly
   // use markdown-it plugin instead?
   const $ = load(convertMDToHTML(data));
+  const generatedAnchors: Partial<Record<string, true>> = {};
+  const tocLines: string[] = [];
+
+  const hLinks =$("h1, h2, h3").toArray();
+  for (let i = 0; i < hLinks.length; i++) {
+    const linkElt = hLinks[i];
+    const linkText = $(linkElt).text();
+    let uri = generateAnchorName(linkText);
+    const tagName = hLinks[i].tagName.toLowerCase();
+    const prefix =  tagName === "h1" ? "" :
+                    tagName === "h2" ? "  - " :
+                                       "    - ";
+    tocLines.push(`${prefix}[${linkText}](#${uri})`);
+    $(`<a name="${uri}"></a>`).insertBefore(linkElt);
+  }
 
   if (linkTranslator) {
     $("a").each((_, elem) => {
@@ -243,7 +266,28 @@ async function parseMD(
   for (let i = 0; i < videoTags.length; i++) {
     await updateMediaTag($(videoTags[i]), inputDir, outputDir);
   }
-  return $.html();
+  return {
+    html: $.html(),
+    tocMd: tocLines.join("\n"),
+    nbTocElements: tocLines.length,
+  };
+
+  function generateAnchorName(title: string): string {
+    // TODO better anchor encoding specification
+    const baseUri = encodeURI(title.toLowerCase().replace(/ /g, "_"));
+    if (generatedAnchors[baseUri] !== true) {
+      generatedAnchors[baseUri] = true;
+      return baseUri;
+    }
+    let i = 1;
+    let resultUri;
+    do {
+      resultUri = `${baseUri}_(${i})`;
+      i++;
+    } while (generatedAnchors[resultUri] === true);
+    generatedAnchors[resultUri] = true;
+    return resultUri;
+  }
 }
 
 /**
