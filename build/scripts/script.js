@@ -4,6 +4,10 @@ let rootUrl = window.rootUrl;
   const a = document.createElement("a");
   a.href = rootUrl;
   rootUrl = a.href;
+
+  if (rootUrl[rootUrl.length - 1] === "/") {
+    rootUrl = rootUrl.substring(0, rootUrl.length - 1);
+  }
 }
 
 /** Information on the initialization of the search feature. */
@@ -515,6 +519,8 @@ function updateSearchResults(value) {
 
     const locationDiv = document.createElement("div");
     locationDiv.className = "search-result-location";
+
+    let needSeparator = false;
     if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
       let linkH1;
       if (links.anchorH1 !== undefined) {
@@ -527,38 +533,47 @@ function updateSearchResults(value) {
       linkH1.className = "h1";
       linkH1.textContent = res.doc.h1;
       locationDiv.appendChild(linkH1);
-      if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+      needSeparator = true;
+    }
+
+    if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+      if (needSeparator) {
         const separatorSpan = document.createElement("span");
         separatorSpan.textContent = " > ";
         locationDiv.appendChild(separatorSpan);
-        let linkH2;
-        if (links.anchorH2 !== undefined) {
-          const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
-          linkH2 = document.createElement("a");
-          linkH2.href = href;
-        } else {
-          linkH2 = document.createElement("span");
-        }
-        linkH2.className = "h2";
-        linkH2.textContent = res.doc.h2;
-        locationDiv.appendChild(linkH2);
-        if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
-          const separatorSpan = document.createElement("span");
-          separatorSpan.textContent = " > ";
-          locationDiv.appendChild(separatorSpan);
-          let linkH3;
-          if (links.anchorH3 !== undefined) {
-            const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
-            linkH3 = document.createElement("a");
-            linkH3.href = href;
-          } else {
-            linkH3 = document.createElement("span");
-          }
-          linkH3.className = "h3";
-          linkH3.textContent = res.doc.h3;
-          locationDiv.appendChild(linkH3);
-        }
+        needSeparator = false;
       }
+      let linkH2;
+      if (links.anchorH2 !== undefined) {
+        const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
+        linkH2 = document.createElement("a");
+        linkH2.href = href;
+      } else {
+        linkH2 = document.createElement("span");
+      }
+      linkH2.className = "h2";
+      linkH2.textContent = res.doc.h2;
+      locationDiv.appendChild(linkH2);
+      needSeparator = true;
+    }
+    if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
+      if (needSeparator) {
+        const separatorSpan = document.createElement("span");
+        separatorSpan.textContent = " > ";
+        locationDiv.appendChild(separatorSpan);
+        needSeparator = false;
+      }
+      let linkH3;
+      if (links.anchorH3 !== undefined) {
+        const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
+        linkH3 = document.createElement("a");
+        linkH3.href = href;
+      } else {
+        linkH3 = document.createElement("span");
+      }
+      linkH3.className = "h3";
+      linkH3.textContent = res.doc.h3;
+      locationDiv.appendChild(linkH3);
     }
     const bodyDiv = document.createElement("div");
     bodyDiv.className = "search-result-body";

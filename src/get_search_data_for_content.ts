@@ -30,9 +30,13 @@ export default function getSearchDataForContent(
   let currentH3Anchor: string | undefined;
   let currentBody: string[] = [];
   let currentLevel: string | undefined;
-  for (var i = 0; i < children.length; i++) {
+  let lastAnchor: AnyNode | undefined;
+  for (let i = 0; i < children.length; i++) {
     const child = children[i];
     switch (child.name.toLowerCase()) {
+      case "a":
+        lastAnchor = children[i];
+        break;
       case "h1":
         anounceLastElement();
         currentH1 = $(child).text();
@@ -40,7 +44,7 @@ export default function getSearchDataForContent(
         // TODO We know that's the anchor's link is in the previous element.
         // That's pretty ugly but it works for now.
         // Find better solution
-        currentH1Anchor = getAnchorName(children[i - 1]);
+        currentH1Anchor = getAnchorName(lastAnchor);
         currentH2 = undefined;
         currentH2Anchor = undefined;
         currentH3 = undefined;
@@ -54,7 +58,7 @@ export default function getSearchDataForContent(
         // TODO We know that's the anchor's link is in the previous element.
         // That's pretty ugly but it works for now.
         // Find better solution
-        currentH2Anchor = getAnchorName(children[i - 1]);
+        currentH2Anchor = getAnchorName(lastAnchor);
         currentH3 = undefined;
         currentH3Anchor = undefined;
         currentLevel = "h2";
@@ -65,9 +69,8 @@ export default function getSearchDataForContent(
         // TODO We know that's the anchor's link is in the previous element.
         // That's pretty ugly but it works for now.
         // Find better solution
-        getAnchorName(children[i - 1]);
         currentH3 = $(child).text();
-        currentH3Anchor = getAnchorName(children[i - 1]);
+        currentH3Anchor = getAnchorName(lastAnchor);
         currentLevel = "h3";
         break;
 
@@ -122,18 +125,7 @@ export default function getSearchDataForContent(
     if (elt === undefined) {
       return;
     }
-
-    const children = $(elt).children();
-    if (children.length !== 1) {
-      return;
-    }
-
-    const child = children.toArray()[0];
-    if (child.name !== "a") {
-      return;
-    }
-
-    const name = $(child).attr("name");
+    const name = $(elt).attr("name");
     if (name !== undefined && name.length > 0) {
       return name;
     }
