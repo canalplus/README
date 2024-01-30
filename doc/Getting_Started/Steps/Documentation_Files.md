@@ -46,7 +46,8 @@ writing your documentation to get a feeling of what information to put in a file
 and when another file should be created instead.
 
 For example, this `Documentation Files` documentation page is written in a
-single Markdown source page, here: TODO
+single Markdown source page, here:
+[Documentation_Files.md](https://github.com/canalplus/README/blob/main/doc/Getting_Started/Steps/Documentation_Files.md).
 
 As you can see, its content is just straightforward human-readable Markdown,
 with [headings](https://spec.commonmark.org/0.30/#atx-headings),
@@ -79,7 +80,7 @@ example:
 
 ```html
 <p style="text-align: center; border: 1px dashed #444">
-  Some <i>embedded HTML</i> block
+    Some <i>embedded HTML</i> block
 </p>
 ```
 
@@ -142,7 +143,7 @@ Will be transformed into:
 
 ```js
 function print() {
-  console.log("Hello world!");
+    console.log("Hello world!");
 }
 ```
 
@@ -180,12 +181,12 @@ simple way:
 
 3. Every characters not part of any of those sets:
 
-   - Upper-case latin letters from A to Z
-   - Lower-case latin letters from a to z
-   - dashes (`-`)
-   - underscores (`_`)
+    - Upper-case latin letters from A to Z
+    - Lower-case latin letters from a to z
+    - dashes (`-`)
+    - underscores (`_`)
 
-   Will be removed when put as an anchor.
+    Will be removed when put as an anchor.
 
 4. All remaining upper-case aphabetical characters (A to Z), is transformed to a
    lower-case character (a to z).
