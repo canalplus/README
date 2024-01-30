@@ -1,7 +1,8 @@
 import * as path from "path";
 import { encode } from "html-entities";
 import type {
-  LocalDocInformation,
+  LocalDocPageInformation,
+  LocalDocPageGroupInformation,
   LogoInformation,
 } from "./parse_doc_configs.js";
 import { toUriCompatibleRelativePath } from "./utils.js";
@@ -16,16 +17,16 @@ import { toUriCompatibleRelativePath } from "./utils.js";
  * @returns {string}
  */
 export default function generateSidebarHtml(
-  pages: LocalDocInformation[],
+  pages: Array<LocalDocPageInformation | LocalDocPageGroupInformation>,
   currentPageIndexes: number[],
   currentPath: string,
-  logoInfo: LogoInformation | null,
+  logoInfo: LogoInformation | null
 ): string {
   const sidebarHeaderHtml = constructSidebarHeaderHtml(logoInfo);
   const links = pages
     .map((p, i) => {
       const isActive = i === currentPageIndexes[0];
-      if (p.pages === undefined) {
+      if (!p.isPageGroup) {
         return generateLiForPage(p, isActive);
       } else {
         const lis = p.pages
@@ -39,7 +40,7 @@ export default function generateSidebarHtml(
           `<div class="sidebar-item sidebar-item-group${
             isActive
               ? " active"
-              : "" + (isActive || p.defaultOpen === true ? " opened" : "")
+              : "" + (isActive || p.defaultOpen ? " opened" : "")
           }">` +
           encode(p.displayName) +
           "</div>" +
@@ -59,15 +60,12 @@ export default function generateSidebarHtml(
   );
 
   function generateLiForPage(
-    p: LocalDocInformation,
-    isActive: boolean,
+    p: LocalDocPageInformation,
+    isActive: boolean
   ): string {
-    if (p.outputFile === undefined) {
-      return "";
-    }
     const relativeUri = toUriCompatibleRelativePath(
       p.outputFile,
-      path.dirname(currentPath),
+      path.dirname(currentPath)
     );
     const activeClass = isActive ? " active" : "";
     const cleanedHref = encode(relativeUri);

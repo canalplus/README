@@ -15,7 +15,7 @@ export default function generatePageListHtml(
   links: LinkCategory[],
   currentLinkIdx: number,
   currentPageIndexes: number[],
-  currentPath: string,
+  currentPath: string
 ): string {
   const currentDir = path.dirname(currentPath);
   const linksHtml = links
@@ -37,15 +37,12 @@ export default function generatePageListHtml(
               .map((currentPage, pageidx) => {
                 const isPageActive =
                   isActiveCat && pageidx === currentPageIndexes[0];
-                const { displayName, outputFile } = currentPage;
+                const { displayName } = currentPage;
                 if (!currentPage.isPageGroup) {
-                  if (outputFile === undefined) {
-                    return "";
-                  }
                   const pageActiveClasses = isPageActive ? " active" : "";
                   const relativeUri = toUriCompatibleRelativePath(
-                    outputFile,
-                    currentDir,
+                    currentPage.outputFile,
+                    currentDir
                   );
                   return (
                     `<li class="page-list-item${pageActiveClasses}">` +
@@ -56,9 +53,7 @@ export default function generatePageListHtml(
                 }
                 const pageActiveClasses =
                   (isPageActive ? " active" : "") +
-                  (isPageActive || currentPage.defaultOpen === true
-                    ? " opened"
-                    : "");
+                  (isPageActive || currentPage.defaultOpen ? " opened" : "");
                 const pageGroupHtml =
                   `<li>` +
                   `<div class="page-list-item page-list-group${pageActiveClasses}">` +
@@ -66,7 +61,7 @@ export default function generatePageListHtml(
                   `</div><ul class="page-list-group-group">`;
                 return (
                   pageGroupHtml +
-                  (currentPage.pages ?? [])
+                  currentPage.pages
                     .map((currentSubPage, spIdx) => {
                       const spActiveClasses =
                         isPageActive && spIdx === currentPageIndexes[1]
@@ -76,12 +71,9 @@ export default function generatePageListHtml(
                         displayName: subDisplayName,
                         outputFile: subOutputFile,
                       } = currentSubPage;
-                      if (subOutputFile === undefined) {
-                        return "";
-                      }
                       const relativeUri = toUriCompatibleRelativePath(
                         subOutputFile,
-                        currentDir,
+                        currentDir
                       );
                       return (
                         `<li class="page-list-item${spActiveClasses}">` +
@@ -122,7 +114,6 @@ export default function generatePageListHtml(
           return "";
 
         case "version":
-          // TODO?
           return "";
       }
     })

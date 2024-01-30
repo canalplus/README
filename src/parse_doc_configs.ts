@@ -26,17 +26,23 @@ export interface LocalDocCategory {
   type: "local-doc";
   displayName: string;
   firstPage: string | undefined;
-  pages: LocalDocInformation[];
+  pages: Array<LocalDocPageInformation | LocalDocPageGroupInformation>;
 }
 
-export interface LocalDocInformation {
-  isPageGroup: boolean;
+export interface LocalDocPageInformation {
+  isPageGroup: false;
   displayName: string;
-  inputFile?: string;
-  outputFile?: string;
-  pages?: LocalDocInformation[] | undefined;
-  defaultOpen?: boolean;
+  inputFile: string;
+  outputFile: string;
 }
+
+export interface LocalDocPageGroupInformation {
+  isPageGroup: true;
+  displayName: string;
+  pages: LocalDocPageInformation[];
+  defaultOpen: boolean;
+}
+
 
 interface RootDocConfigInput {
   logo?: {
@@ -240,7 +246,7 @@ async function parseLocalDocCategory(
     }
 
     if (pageStat.isDirectory()) {
-      const parsedPage: LocalDocInformation = {
+      const parsedPage: LocalDocPageGroupInformation = {
         isPageGroup: true,
         defaultOpen: page.defaultOpen === true,
         displayName: page.displayName,

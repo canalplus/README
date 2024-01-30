@@ -12,32 +12,20 @@ import type { FileSearchIndex } from "./get_search_data_for_content.js";
 import log from "./log.js";
 import parseDocConfigs from "./parse_doc_configs.js";
 import type {
-  ParsedDocConfig,
   LogoInformation,
-  LocalDocInformation,
+  LocalDocPageInformation,
+  LinkCategory,
 } from "./parse_doc_configs.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
-async function createDirIfDoesntExist(dir: string) {
-  const doesCSSOutDirExists = await promisify(fs.exists)(dir);
-  if (!doesCSSOutDirExists) {
-    try {
-      await mkdirParent(dir);
-    } catch (err) {
-      const srcMessage =
-        ((err as { message: string }) ?? {}).message ?? "Unknown error";
-      throw new Error(`Could not create "${dir}" directory: ${srcMessage}`);
-    }
-  }
-}
-
+/** Global JS configuration for README. */
 export interface DocumentationCreationOptions {
+  /** If `true`, we will remove the output directory first. */
   clean?: boolean;
-  css?: string[];
+  /** Set to the project's version linked to your documentation. */
   version?: string | undefined;
-  getPageTitle?: (mdTitle: string) => string;
 }
 
 /**
@@ -60,65 +48,22 @@ export interface DocumentationCreationOptions {
 export default async function createDocumentation(
   baseInDir: string,
   baseOutDir: string,
-  options: DocumentationCreationOptions = {},
+  options: DocumentationCreationOptions = {}
 ): Promise<void> {
   if (options.clean === true) {
     rimrafSync(baseOutDir);
   }
 
-  let cssOutputPaths: string[] = [];
-
-  {
-    const cssOutputDir = path.join(path.resolve(baseOutDir), "styles");
-    const cssFiles = [
-      path.join(currentDir, "styles/style.css"),
-      path.join(currentDir, "styles/code.css"),
-    ];
-    if ("css" in options && Array.isArray(options.css)) {
-      // Copy CSS files
-      const { css } = options;
-      cssFiles.push(...css.filter((p: unknown) => typeof p === "string"));
-    }
-
-    cssOutputPaths = cssFiles.map((cssFilepath: string) => {
-      return path.join(cssOutputDir, path.basename(cssFilepath));
-    });
-
-    await createDirIfDoesntExist(cssOutputDir);
-    await Promise.all(
-      cssFiles.map(async (cssInput: string, i: number) => {
-        await promisify(fs.copyFile)(cssInput, cssOutputPaths[i]);
-      }),
-    );
-  }
-
-  // Copy JavaScript file
-  const scriptOutputDir = path.join(path.resolve(baseOutDir), "scripts");
-  const scripts = [
-    path.join(currentDir, "scripts/lunr.js"),
-    path.join(currentDir, "scripts/script.js"),
-  ];
-  const scriptOutputPaths = scripts.map((s) =>
-    path.join(scriptOutputDir, path.basename(s)),
-  );
-
-  await createDirIfDoesntExist(scriptOutputDir);
-  await Promise.all(
-    scripts.map(async (s, i) => {
-      await promisify(fs.copyFile)(s, scriptOutputPaths[i]);
-    }),
-  );
-
-  // Construct tree listing categories, pages, and relations between them.
+  // Parse global configuration as well as local configurations
   const config = await parseDocConfigs(baseInDir, baseOutDir);
 
-  if (
-    config.favicon !== undefined &&
-    typeof config.favicon.srcPath === "string"
-  ) {
+  // Copy global files to output directory
+  const cssOutputPaths: string[] = await copyCssFiles(baseOutDir);
+  const scriptOutputPaths: string[] = await copyJavaScriptFiles(baseOutDir);
+  if (typeof config.favicon?.srcPath === "string") {
     await copyFileToOutputDir(config.favicon.srcPath, baseInDir, baseOutDir);
   }
-  if (config.logo !== undefined && typeof config.logo.srcPath === "string") {
+  if (typeof config.logo?.srcPath === "string") {
     await copyFileToOutputDir(config.logo.srcPath, baseInDir, baseOutDir);
   }
 
@@ -128,43 +73,27 @@ export default async function createDocumentation(
    */
   const anchorChecker = new AnchorChecker();
 
-  // Construct a dictionary of markdown files to the corresponding output file.
-  // This can be useful to redirect links to other converted markdowns.
-  const fileDict = config.links.reduce((acc, linkInfo) => {
-    if (linkInfo.type !== "local-doc") {
-      return acc;
-    }
-    return linkInfo.pages.reduce(
-      (acc2: Partial<Record<string, string>>, pageInfo) => {
-        if (pageInfo.isPageGroup) {
-          return (pageInfo.pages ?? []).reduce(
-            (acc3: Partial<Record<string, string>>, subPageInfo) => {
-              if (subPageInfo.inputFile !== undefined) {
-                acc3[subPageInfo.inputFile] = subPageInfo.outputFile;
-              }
-              return acc3;
-            },
-            acc2,
-          );
-        } else {
-          if (pageInfo.inputFile !== undefined) {
-            acc2[pageInfo.inputFile] = pageInfo.outputFile;
-          }
-        }
-        return acc2;
-      },
-      acc,
-    );
-  }, {});
+  /**
+   * Map where the key is the input Markdown file and the value the
+   * corresponding output HTML file.
+   */
+  const fileMap: Map<string, string> = constructFileMap(config.links);
 
+  /** Object filled progressively to construct our final search index. */
   const searchIndex: Array<{
     file: string;
     index: FileSearchIndex[];
   }> = [];
 
+  const version: string | undefined = options.version;
+
   // Create documentation pages
-  for (let linkIdx = 0; linkIdx < config.links.length; linkIdx++) {
-    const currentLink = config.links[linkIdx];
+  for (
+    let linkIndexInConfig = 0;
+    linkIndexInConfig < config.links.length;
+    linkIndexInConfig++
+  ) {
+    const currentLink = config.links[linkIndexInConfig];
     if (currentLink.type !== "local-doc") {
       continue;
     }
@@ -172,64 +101,36 @@ export default async function createDocumentation(
       const currentPage = currentLink.pages[pageIdx];
       if (!currentPage.isPageGroup) {
         const { inputFile, outputFile } = currentPage;
-        if (inputFile !== undefined && outputFile !== undefined) {
+        await prepareAndCreateDocumentationPage({
+          inputFile,
+          outputFile,
+          linkIndexInConfig,
+          pageIndexesInLink: [pageIdx],
+          pageTitle: currentPage.displayName,
+        });
+      } else if (Array.isArray(currentPage.pages)) {
+        for (
+          let subPageIdx = 0;
+          subPageIdx < currentPage.pages.length;
+          subPageIdx++
+        ) {
+          const currentSubPage = currentPage.pages[subPageIdx];
+          const { inputFile, outputFile } = currentSubPage;
           await prepareAndCreateDocumentationPage({
-            anchorChecker,
-            baseOutDir,
-            config,
-            cssOutputPaths,
-            fileDict,
             inputFile,
-            linkIdx,
             outputFile,
-            pageIdxs: [pageIdx],
-            pageTitle:
-              options.getPageTitle === undefined
-                ? currentPage.displayName
-                : options.getPageTitle(currentPage.displayName),
-            scriptOutputPaths,
-            searchIndex,
-            version: options.version,
+            linkIndexInConfig,
+            pageIndexesInLink: [pageIdx, subPageIdx],
+            pageTitle: currentSubPage.displayName,
           });
-        }
-      } else {
-        if (Array.isArray(currentPage.pages)) {
-          for (
-            let subPageIdx = 0;
-            subPageIdx < (currentPage.pages ?? []).length;
-            subPageIdx++
-          ) {
-            const currentSubPage = currentPage.pages[subPageIdx];
-            const { inputFile, outputFile } = currentSubPage;
-            if (inputFile !== undefined && outputFile !== undefined) {
-              await prepareAndCreateDocumentationPage({
-                anchorChecker,
-                baseOutDir,
-                config,
-                cssOutputPaths,
-                fileDict,
-                inputFile,
-                linkIdx,
-                outputFile,
-                pageIdxs: [pageIdx, subPageIdx],
-                pageTitle:
-                  options.getPageTitle === undefined
-                    ? currentSubPage.displayName
-                    : options.getPageTitle(currentSubPage.displayName),
-                scriptOutputPaths,
-                searchIndex,
-                version: options.version,
-              });
-            }
-          }
         }
       }
     }
   }
 
-  const anchorChecks = anchorChecker.check();
-  if (anchorChecks.length > 0) {
-    for (const check of anchorChecks) {
+  const anchorCheckErrors = anchorChecker.checkAllAnchors();
+  if (anchorCheckErrors.length > 0) {
+    for (const check of anchorCheckErrors) {
       if (check.validity === AnchorValidity.AnchorNotFound) {
         let message = `A referenced anchor link was not found.
   File with link: ${check.inputFileWithLink}
@@ -237,7 +138,7 @@ export default async function createDocumentation(
   Anchor:         ${check.anchor}
 `;
         const availableAnchors = anchorChecker.getAnchorsForInputFile(
-          check.inputFileLinkDestination,
+          check.inputFileLinkDestination
         );
         if (availableAnchors !== undefined && availableAnchors.length > 0) {
           message +=
@@ -251,7 +152,7 @@ export default async function createDocumentation(
   try {
     const searchIndexLoc = path.join(
       path.resolve(baseOutDir),
-      "searchIndex.json",
+      "searchIndex.json"
     );
     await promisify(fs.writeFile)(searchIndexLoc, JSON.stringify(searchIndex));
   } catch (err) {
@@ -259,158 +160,160 @@ export default async function createDocumentation(
       ((err as { message: string }) ?? {}).message ?? "Unknown error";
     log("WARNING", `Could not create search index file: ${srcMessage}`);
   }
-}
 
-async function prepareAndCreateDocumentationPage({
-  anchorChecker,
-  baseOutDir,
-  config,
-  cssOutputPaths,
-  fileDict,
-  inputFile,
-  linkIdx,
-  outputFile,
-  pageIdxs,
-  pageTitle,
-  scriptOutputPaths,
-  searchIndex,
-  version,
-}: {
-  anchorChecker: AnchorChecker;
-  baseOutDir: string;
-  config: ParsedDocConfig;
-  cssOutputPaths: string[];
-  fileDict: Partial<Record<string, string>>;
-  inputFile: string;
-  linkIdx: number;
-  outputFile: string;
-  pageIdxs: number[];
-  pageTitle: string;
-  scriptOutputPaths: string[];
-  searchIndex: Array<{
-    file: string;
-    index: FileSearchIndex[];
-  }>;
-  version: string | undefined;
-}) {
-  const link = config.links[linkIdx];
-  if (link.type !== "local-doc") {
-    return;
-  }
-  // Create output directory if it does not exist
-  const outDir = path.dirname(outputFile);
-  await createDirIfDoesntExist(outDir);
+  return;
 
-  let logoInfo: LogoInformation | null = null;
-  if (config.logo !== undefined) {
-    logoInfo = {};
-    if (config.logo !== undefined && typeof config.logo.link === "string") {
-      logoInfo.link = config.logo.link;
-    }
-    if (config.logo !== undefined && typeof config.logo.srcPath === "string") {
-      const fullPath = path.join(baseOutDir, config.logo.srcPath);
-      logoInfo.url = toUriCompatibleRelativePath(fullPath, outDir);
-    }
-  }
-  let faviconUrl = null;
-  if (
-    config.favicon !== undefined &&
-    typeof config.favicon.srcPath === "string"
-  ) {
-    const fullPath = path.join(baseOutDir, config.favicon.srcPath);
-    faviconUrl = toUriCompatibleRelativePath(fullPath, outDir);
-  }
-  const pageListHtml = generatePageListHtml(
-    config.links,
-    linkIdx,
-    pageIdxs,
-    outputFile,
-  );
-  const navBarHtml = generateHeaderHtml(
-    config,
-    linkIdx,
-    outputFile,
-    logoInfo,
-    version,
-  );
-  const pages = link.pages ?? [];
-  const sidebarHtml = generateSidebarHtml(
-    pages,
-    pageIdxs,
-    outputFile,
-    logoInfo,
-  );
-
-  let prevPageConfig = null;
-  let nextPageConfig = null;
-  if (pageIdxs.length > 1 && pageIdxs[1] > 0) {
-    prevPageConfig = pages[pageIdxs[0]].pages?.[pageIdxs[1] - 1] ?? null;
-  } else if (pageIdxs[0] > 0) {
-    prevPageConfig = pages[pageIdxs[0] - 1] ?? null;
-  }
-  if (
-    pageIdxs.length > 1 &&
-    pageIdxs[1] < (pages[pageIdxs[0]].pages ?? []).length - 1
-  ) {
-    nextPageConfig = (pages[pageIdxs[0]].pages ?? [])[pageIdxs[1] + 1];
-  } else if (pageIdxs[0] < pages.length - 1) {
-    nextPageConfig = pages[pageIdxs[0] + 1];
-  }
-  const prevPageInfo =
-    prevPageConfig === null
-      ? null
-      : getRelativePageInfo(prevPageConfig, outputFile);
-  const nextPageInfo =
-    nextPageConfig === null
-      ? null
-      : getRelativePageInfo(nextPageConfig, outputFile);
-
-  const cssUrls = cssOutputPaths.map((cssOutput) =>
-    toUriCompatibleRelativePath(cssOutput, outDir),
-  );
-  const scriptUrls = scriptOutputPaths.map((s) =>
-    toUriCompatibleRelativePath(s, outDir),
-  );
-
-  // add link translation to options
-  const linkTranslator = linkTranslatorFactory(
+  async function prepareAndCreateDocumentationPage({
     inputFile,
     outputFile,
-    fileDict,
-    anchorChecker,
-  );
-  const { anchors } = await createDocumentationPage({
-    baseOutDir,
-    cssUrls,
-    faviconUrl,
-    inputFile,
-    linkTranslator,
-    navBarHtml,
-    nextPageInfo,
-    outputFile,
-    pageListHtml,
+    linkIndexInConfig,
+    pageIndexesInLink,
     pageTitle,
-    prevPageInfo,
-    scriptUrls,
-    searchIndex,
-    sidebarHtml,
-  });
-  anchorChecker.addAnchorsForFile(inputFile, anchors);
+  }: {
+    inputFile: string;
+    outputFile: string;
+    linkIndexInConfig: number;
+    pageIndexesInLink: number[];
+    pageTitle: string;
+  }) {
+    const link = config.links[linkIndexInConfig];
+    if (link.type !== "local-doc") {
+      return;
+    }
+    // Create output directory if it does not exist
+    const outDir = path.dirname(outputFile);
+    await createDirIfDoesntExist(outDir);
+
+    let logoInfo: LogoInformation | null = null;
+    if (config.logo !== undefined) {
+      logoInfo = {};
+      if (config.logo !== undefined && typeof config.logo.link === "string") {
+        logoInfo.link = config.logo.link;
+      }
+      if (
+        config.logo !== undefined &&
+        typeof config.logo.srcPath === "string"
+      ) {
+        const fullPath = path.join(baseOutDir, config.logo.srcPath);
+        logoInfo.url = toUriCompatibleRelativePath(fullPath, outDir);
+      }
+    }
+    let faviconUrl = null;
+    if (
+      config.favicon !== undefined &&
+      typeof config.favicon.srcPath === "string"
+    ) {
+      const fullPath = path.join(baseOutDir, config.favicon.srcPath);
+      faviconUrl = toUriCompatibleRelativePath(fullPath, outDir);
+    }
+    const pageListHtml = generatePageListHtml(
+      config.links,
+      linkIndexInConfig,
+      pageIndexesInLink,
+      outputFile
+    );
+    const navBarHtml = generateHeaderHtml(
+      config,
+      linkIndexInConfig,
+      outputFile,
+      logoInfo,
+      version
+    );
+    const pages = link.pages;
+    const sidebarHtml = generateSidebarHtml(
+      pages,
+      pageIndexesInLink,
+      outputFile,
+      logoInfo
+    );
+
+    const firstLevelPage = pages[pageIndexesInLink[0]];
+    let prevPageConfig: LocalDocPageInformation | null = null;
+    let nextPageConfig: LocalDocPageInformation | null = null;
+    if (
+      firstLevelPage.isPageGroup &&
+      pageIndexesInLink.length > 1 &&
+      pageIndexesInLink[1] > 0
+    ) {
+      prevPageConfig = firstLevelPage.pages[pageIndexesInLink[1] - 1] ?? null;
+    } else if (pageIndexesInLink[0] > 0) {
+      const prevFirstLevelPage = pages[pageIndexesInLink[0] - 1];
+      if (prevFirstLevelPage !== undefined) {
+        prevPageConfig = prevFirstLevelPage.isPageGroup
+          ? prevFirstLevelPage.pages[0]
+          : prevFirstLevelPage;
+      }
+    }
+    if (
+      firstLevelPage.isPageGroup &&
+      pageIndexesInLink.length > 1 &&
+      pageIndexesInLink[1] < firstLevelPage.pages.length - 1
+    ) {
+      nextPageConfig = firstLevelPage.pages[pageIndexesInLink[1] + 1];
+    } else if (pageIndexesInLink[0] < pages.length - 1) {
+      const nextFirstLevelPage = pages[pageIndexesInLink[0] + 1];
+      if (nextFirstLevelPage !== undefined) {
+        nextPageConfig = nextFirstLevelPage.isPageGroup
+          ? nextFirstLevelPage.pages[0]
+          : nextFirstLevelPage;
+      }
+    }
+    const prevPageInfo =
+      prevPageConfig === null
+        ? null
+        : getRelativePageInfo(prevPageConfig, outputFile);
+    const nextPageInfo =
+      nextPageConfig === null
+        ? null
+        : getRelativePageInfo(nextPageConfig, outputFile);
+
+    const cssUrls = cssOutputPaths.map((cssOutput) =>
+      toUriCompatibleRelativePath(cssOutput, outDir)
+    );
+    const scriptUrls = scriptOutputPaths.map((s) =>
+      toUriCompatibleRelativePath(s, outDir)
+    );
+
+    // add link translation to options
+    const linkTranslator = linkTranslatorFactory(
+      inputFile,
+      outputFile,
+      fileMap,
+      anchorChecker
+    );
+    const { anchors } = await createDocumentationPage({
+      baseOutDir,
+      cssUrls,
+      faviconUrl,
+      inputFile,
+      linkTranslator,
+      navBarHtml,
+      nextPageInfo,
+      outputFile,
+      pageListHtml,
+      pageTitle,
+      prevPageInfo,
+      scriptUrls,
+      searchIndex,
+      sidebarHtml,
+    });
+    anchorChecker.addAnchorsForFile(inputFile, anchors);
+  }
 }
 
 /**
  * Generate linkTranslator functions
  * @param {string} inputFile
  * @param {string} outputFile
- * @param {Object} fileDict
+ * @param {Array.<Object>} fileMap
  * @param {Object} anchorChecker
  * @returns {Function}
  */
 function linkTranslatorFactory(
   inputFile: string,
   outputFile: string,
-  fileDict: Partial<Record<string, string>>,
-  anchorChecker: AnchorChecker,
+  fileMap: Map<string, string>,
+  anchorChecker: AnchorChecker
 ): (link: string) => string | undefined {
   const outputDir = path.dirname(outputFile);
   /**
@@ -436,20 +339,20 @@ function linkTranslatorFactory(
     const completeLink = path.join(path.dirname(inputFile), linkWithoutAnchor);
     const normalizedLink = path.normalize(path.resolve(completeLink));
 
-    const translation = fileDict[normalizedLink];
+    const translation = fileMap.get(normalizedLink);
     if (translation === undefined) {
       log(
         "WARNING",
         `A referenced link was not found.
   File: ${inputFile}
   Link: ${link}
-`,
+`
       );
     } else if (anchor.length > 1) {
       anchorChecker.addAnchorReference(
         inputFile,
         normalizedLink,
-        anchor.substring(1),
+        anchor.substring(1)
       );
     }
     return translation !== undefined
@@ -459,23 +362,16 @@ function linkTranslatorFactory(
 }
 
 function getRelativePageInfo(
-  pageConfig: LocalDocInformation,
-  currentPath: string,
+  pageConfig: LocalDocPageInformation,
+  currentPath: string
 ): {
   name: string;
   link: string;
 } | null {
-  const { displayName: pDisplayName, outputFile: pOutputFile } =
-    Array.isArray(pageConfig.pages) && pageConfig.pages.length > 0
-      ? pageConfig.pages[0]
-      : pageConfig;
-
-  if (pOutputFile === undefined) {
-    return null;
-  }
+  const { displayName: pDisplayName, outputFile: pOutputFile } = pageConfig;
   const relativeHref = toUriCompatibleRelativePath(
     pOutputFile,
-    path.dirname(currentPath),
+    path.dirname(currentPath)
   );
   return { name: pDisplayName, link: relativeHref };
 }
@@ -483,8 +379,9 @@ function getRelativePageInfo(
 async function copyFileToOutputDir(
   filePathFromInputDir: string,
   inputDir: string,
-  outputDir: string,
+  outputDir: string
 ) {
+  // TODO check links are local
   const inputPath = path.join(inputDir, filePathFromInputDir);
   const outputPath = path.join(outputDir, filePathFromInputDir);
   const doesOutDirExists = await promisify(fs.exists)(path.dirname(outputPath));
@@ -495,7 +392,7 @@ async function copyFileToOutputDir(
       const srcMessage =
         ((err as { message: string }) ?? {}).message ?? "Unknown error";
       throw new Error(
-        `Could not create "${outputPath}" directory: ${srcMessage}`,
+        `Could not create "${outputPath}" directory: ${srcMessage}`
       );
     }
   }
@@ -503,4 +400,78 @@ async function copyFileToOutputDir(
   if (!doesOutFileExist) {
     await promisify(fs.copyFile)(inputPath, outputPath);
   }
+}
+
+async function createDirIfDoesntExist(dir: string) {
+  const doesCSSOutDirExists = await promisify(fs.exists)(dir);
+  if (!doesCSSOutDirExists) {
+    try {
+      await mkdirParent(dir);
+    } catch (err) {
+      const srcMessage =
+        ((err as { message: string }) ?? {}).message ?? "Unknown error";
+      throw new Error(`Could not create "${dir}" directory: ${srcMessage}`);
+    }
+  }
+}
+
+async function copyCssFiles(baseOutDir: string): Promise<string[]> {
+  const cssOutputDir = path.join(path.resolve(baseOutDir), "styles");
+  const cssFiles = [
+    path.join(currentDir, "styles/style.css"),
+    path.join(currentDir, "styles/code.css"),
+  ];
+  const outputPaths = cssFiles.map((cssFilepath: string) => {
+    return path.join(cssOutputDir, path.basename(cssFilepath));
+  });
+  await createDirIfDoesntExist(cssOutputDir);
+  await Promise.all(
+    cssFiles.map(async (cssInput: string, i: number) => {
+      await promisify(fs.copyFile)(cssInput, outputPaths[i]);
+    })
+  );
+  return outputPaths;
+}
+
+async function copyJavaScriptFiles(baseOutDir: string): Promise<string[]> {
+  const scriptOutputDir = path.join(path.resolve(baseOutDir), "scripts");
+  const scripts = [
+    path.join(currentDir, "scripts/lunr.js"),
+    path.join(currentDir, "scripts/script.js"),
+  ];
+  const outputPaths = scripts.map((s) =>
+    path.join(scriptOutputDir, path.basename(s))
+  );
+
+  await createDirIfDoesntExist(scriptOutputDir);
+  await Promise.all(
+    scripts.map(async (s, i) => {
+      await promisify(fs.copyFile)(s, outputPaths[i]);
+    })
+  );
+  return outputPaths;
+}
+
+/**
+ * Construct a Map of markdown files path to the corresponding output file path.
+ * This can be useful to redirect links to other converted markdowns.
+ * @param {Array.<Object>} links
+ * @returns {Map.<string, string>}
+ */
+function constructFileMap(links: LinkCategory[]): Map<string, string> {
+  const fileMap = new Map<string, string>();
+  for (const link of links) {
+    if (link.type === "local-doc") {
+      for (const pageInfo of link.pages) {
+        if (pageInfo.isPageGroup) {
+          for (const subPageInfo of pageInfo.pages) {
+            fileMap.set(subPageInfo.inputFile, subPageInfo.outputFile);
+          }
+        } else {
+          fileMap.set(pageInfo.inputFile, pageInfo.outputFile);
+        }
+      }
+    }
+  }
+  return fileMap;
 }
