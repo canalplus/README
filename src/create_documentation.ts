@@ -323,7 +323,7 @@ function linkTranslatorFactory(
    * @returns {string|undefined}
    */
   return (link: string): string | undefined => {
-    if (/^(?:[a-z]+:)/.test(link)) {
+    if (/^(?:[a-z]+:\/\/)/.test(link)) {
       return;
     }
     if (link[0] === "#") {
@@ -381,9 +381,18 @@ async function copyFileToOutputDir(
   inputDir: string,
   outputDir: string
 ) {
-  // TODO check links are local
   const inputPath = path.join(inputDir, filePathFromInputDir);
   const outputPath = path.join(outputDir, filePathFromInputDir);
+
+  const relativeDir = path.relative(inputDir, inputPath);
+  const isSubdir = !relativeDir.startsWith("..");
+  if (!isSubdir) {
+    throw new Error(
+      "You're trying to copy a media asset outside of your root directory (" +
+        filePathFromInputDir +
+        "). This is for forbidden for now.",
+    );
+  }
   const doesOutDirExists = await promisify(fs.exists)(path.dirname(outputPath));
   if (!doesOutDirExists) {
     try {
