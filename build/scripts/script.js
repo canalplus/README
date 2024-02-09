@@ -512,82 +512,138 @@ function updateSearchResults(value) {
       '<div class="message">' + "No result for that search." + "</div>";
     return;
   }
+
+  function groupArrayItemsByProperty(array, accessor) {
+    const groupedItems = [];
+    const groups = {};
+
+    array.forEach((item) => {
+      const key = accessor(item);
+      if (!groups[key]) {
+        groups[key] = [];
+        groupedItems.push(groups[key]);
+      }
+      groups[key].push(item);
+    });
+
+    return groupedItems;
+  }
+
+  /**
+   * Sort an array by putting first the element that have the
+   * given property undefined.
+   * @param {array} array
+   * @param {function} accessor
+   */
+  function sortArrayByHierarchy(array, accessor) {
+    array.sort((a, b) => (accessor(a) === undefined ? -1 : 1));
+  }
+
+  // lvl 1
+  const groupedSearchResult = groupArrayItemsByProperty(
+    searchResults,
+    (item) => item.doc.h1,
+  );
+  // lvl 2
+  for (let i = 0; i < groupedSearchResult.length; i++) {
+    sortArrayByHierarchy(groupedSearchResult[i], (item) => item.doc.h2);
+    groupedSearchResult[i] = groupArrayItemsByProperty(
+      groupedSearchResult[i],
+      (item) => item.doc.h2,
+    );
+    // lvl 3
+    for (let j = 0; j < groupedSearchResult[i].length; j++) {
+      sortArrayByHierarchy(groupedSearchResult[i][j], (item) => item.doc.h3);
+      groupedSearchResult[i][j] = groupArrayItemsByProperty(
+        groupedSearchResult[i][j],
+        (item) => item.doc.h3,
+      );
+    }
+  }
+
+  console.log("grouped results:", groupedSearchResult);
   searchResultsElt.innerHTML = "";
-  for (let resIdx = 0; resIdx < searchResults.length && resIdx < 30; resIdx++) {
-    const res = searchResults[resIdx];
-    const links = searchIndexLinks[+res.ref];
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "search-result-item";
 
-    const locationDiv = document.createElement("div");
-    locationDiv.className = "search-result-location";
+  for (const h1Grouped of groupedSearchResult) {
+    for (const h2Grouped of h1Grouped) {
+      for (const h3Grouped of h2Grouped) {
+        for (const res of h3Grouped) {
+          console.log("res", res);
+          const links = searchIndexLinks[+res.ref];
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "search-result-item";
 
-    let needSeparator = false;
-    if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
-      let linkH1;
-      if (links.anchorH1 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
-        linkH1 = document.createElement("a");
-        linkH1.href = href;
-      } else {
-        linkH1 = document.createElement("span");
-      }
-      linkH1.className = "h1";
-      linkH1.textContent = res.doc.h1;
-      locationDiv.appendChild(linkH1);
-      needSeparator = true;
-    }
+          const locationDiv = document.createElement("div");
+          locationDiv.className = "search-result-location";
+          let needSeparator = false;
+          if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
+            let linkH1;
+            if (links.anchorH1 !== undefined) {
+              const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
+              linkH1 = document.createElement("a");
+              linkH1.href = href;
+            } else {
+              linkH1 = document.createElement("span");
+            }
+            linkH1.className = "h1";
+            linkH1.textContent = res.doc.h1;
+            locationDiv.appendChild(linkH1);
+            needSeparator = true;
+          }
 
-    if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
-      if (needSeparator) {
-        const separatorSpan = document.createElement("span");
-        separatorSpan.textContent = " > ";
-        locationDiv.appendChild(separatorSpan);
-        needSeparator = false;
-      }
-      let linkH2;
-      if (links.anchorH2 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
-        linkH2 = document.createElement("a");
-        linkH2.href = href;
-      } else {
-        linkH2 = document.createElement("span");
-      }
-      linkH2.className = "h2";
-      linkH2.textContent = res.doc.h2;
-      locationDiv.appendChild(linkH2);
-      needSeparator = true;
-    }
-    if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
-      if (needSeparator) {
-        const separatorSpan = document.createElement("span");
-        separatorSpan.textContent = " > ";
-        locationDiv.appendChild(separatorSpan);
-        needSeparator = false;
-      }
-      let linkH3;
-      if (links.anchorH3 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
-        linkH3 = document.createElement("a");
-        linkH3.href = href;
-      } else {
-        linkH3 = document.createElement("span");
-      }
-      linkH3.className = "h3";
-      linkH3.textContent = res.doc.h3;
-      locationDiv.appendChild(linkH3);
-    }
-    const bodyDiv = document.createElement("div");
-    bodyDiv.className = "search-result-body";
-    let body = res.doc.body ?? "";
-    if (body.length > 300) {
-      body = body.substring(0, 300) + "...";
-    }
-    bodyDiv.textContent = body;
+          if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+            if (needSeparator) {
+              const separatorSpan = document.createElement("span");
+              separatorSpan.textContent = " > ";
+              locationDiv.appendChild(separatorSpan);
+              needSeparator = false;
+            }
+            let linkH2;
+            if (links.anchorH2 !== undefined) {
+              const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
+              linkH2 = document.createElement("a");
+              linkH2.href = href;
+            } else {
+              linkH2 = document.createElement("span");
+            }
+            linkH2.className = "h2";
+            linkH2.textContent = res.doc.h2;
+            locationDiv.appendChild(linkH2);
+            needSeparator = true;
+          }
+          if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
+            if (needSeparator) {
+              const separatorSpan = document.createElement("span");
+              separatorSpan.textContent = " > ";
+              locationDiv.appendChild(separatorSpan);
+              needSeparator = false;
+            }
+            let linkH3;
+            if (links.anchorH3 !== undefined) {
+              const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
+              linkH3 = document.createElement("a");
+              linkH3.href = href;
+            } else {
+              linkH3 = document.createElement("span");
+            }
+            linkH3.className = "h3";
+            linkH3.textContent = res.doc.h3;
+            locationDiv.appendChild(linkH3);
+          }
+          const bodyDiv = document.createElement("div");
+          bodyDiv.className = "search-result-body";
+          let body = res.doc.body ?? "";
+          if (body.length > 300) {
+            body = body.substring(0, 300) + "...";
+          }
+          bodyDiv.textContent = body;
 
-    contentDiv.appendChild(locationDiv);
-    contentDiv.appendChild(bodyDiv);
-    searchResultsElt.appendChild(contentDiv);
+          contentDiv.appendChild(locationDiv);
+          contentDiv.appendChild(bodyDiv);
+          searchResultsElt.appendChild(contentDiv);
+        }
+      }
+    }
   }
 }
 
