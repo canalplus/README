@@ -513,68 +513,19 @@ function updateSearchResults(value) {
     return;
   }
 
-  function groupArrayItemsByProperty(array, accessor) {
-    const groupedItems = [];
-    const groups = {};
-
-    array.forEach((item) => {
-      const key = accessor(item);
-      if (!groups[key]) {
-        groups[key] = [];
-        groupedItems.push(groups[key]);
-      }
-      groups[key].push(item);
-    });
-
-    return groupedItems;
-  }
-
-  /**
-   * Sort an array by putting first the element that have the
-   * given property undefined.
-   * @param {array} array
-   * @param {function} accessor
-   */
-  function sortArrayByHierarchy(array, accessor) {
-    array.sort((a, b) => (accessor(a) === undefined ? -1 : 1));
-  }
-
-  // lvl 1
-  const groupedSearchResult = groupArrayItemsByProperty(
-    searchResults,
-    (item) => item.doc.h1,
-  );
-  // lvl 2
-  for (let i = 0; i < groupedSearchResult.length; i++) {
-    sortArrayByHierarchy(groupedSearchResult[i], (item) => item.doc.h2);
-    groupedSearchResult[i] = groupArrayItemsByProperty(
-      groupedSearchResult[i],
-      (item) => item.doc.h2,
-    );
-    // lvl 3
-    for (let j = 0; j < groupedSearchResult[i].length; j++) {
-      sortArrayByHierarchy(groupedSearchResult[i][j], (item) => item.doc.h3);
-      groupedSearchResult[i][j] = groupArrayItemsByProperty(
-        groupedSearchResult[i][j],
-        (item) => item.doc.h3,
-      );
-    }
-  }
-
-  const flatSearchResult = groupedSearchResult.flat(3);
-
-  console.log("grouped results:", flatSearchResult);
+  // only consider the first 30 results
+  const searchResultSlice = searchResults.slice(0, 29);
+  const searchResultSorted = reorderSearchResultByGroup(searchResultSlice);
   searchResultsElt.innerHTML = "";
 
-  for (const res of flatSearchResult) {
+  for (const res of searchResultSorted) {
     const links = searchIndexLinks[+res.ref];
     const contentDiv = document.createElement("div");
     contentDiv.className = "search-result-item";
     const locationDiv = document.createElement("div");
     locationDiv.className = "search-result-location";
     if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
-      contentDiv.className += " search-result-item-is-h3";
-
+      contentDiv.classList.add("search-result-item-is-h3");
       let linkH3;
       if (links.anchorH3 !== undefined) {
         const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
@@ -587,7 +538,7 @@ function updateSearchResults(value) {
       linkH3.textContent = res.doc.h3;
       locationDiv.appendChild(linkH3);
     } else if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
-      contentDiv.className += " search-result-item-is-h2";
+      contentDiv.classList.add("search-result-item-is-h2");
       let linkH2;
       if (links.anchorH2 !== undefined) {
         const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
@@ -600,7 +551,7 @@ function updateSearchResults(value) {
       linkH2.textContent = res.doc.h2;
       locationDiv.appendChild(linkH2);
     } else if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
-      contentDiv.className += " search-result-item-is-h1";
+      contentDiv.classList.add("search-result-item-is-h1");
       let linkH1;
       if (links.anchorH1 !== undefined) {
         const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
@@ -626,6 +577,80 @@ function updateSearchResults(value) {
     contentDiv.appendChild(bodyDiv);
     searchResultsElt.appendChild(contentDiv);
   }
+}
+/**
+ * Re-orders search results by grouping them according
+ * to their shared section headings (h1, h2, h3).
+ * @param {array} searchResults The array of search results to be re-ordered.
+ * @returns An array re-ordered based on section headings.
+ *
+ * @example
+ */
+function reorderSearchResultByGroup(searchResults) {
+  // group by h1
+  const groupedSearchResult = groupArrayItemsBy(
+    searchResults,
+    (item) => item.doc.h1,
+  );
+  // group by h2
+  for (let i = 0; i < groupedSearchResult.length; i++) {
+    // item with no h2 should be ordered before items with h2.
+    sortUndefinedPropertyFirst(groupedSearchResult[i], (item) => item.doc.h2);
+    groupedSearchResult[i] = groupArrayItemsBy(
+      groupedSearchResult[i],
+      (item) => item.doc.h2,
+    );
+    // group by h3
+    for (let j = 0; j < groupedSearchResult[i].length; j++) {
+      // item with no h3 should be ordered before items with h3.
+      sortUndefinedPropertyFirst(
+        groupedSearchResult[i][j],
+        (item) => item.doc.h3,
+      );
+      groupedSearchResult[i][j] = groupArrayItemsBy(
+        groupedSearchResult[i][j],
+        (item) => item.doc.h3,
+      );
+    }
+  }
+  const flatSearchResult = groupedSearchResult.flat(3);
+  return flatSearchResult;
+}
+
+/**
+ * Groups items in an array based on a property and returns an array of subarrays.
+ * @param {array} array The array to group.
+ * @param {function} accessor A function that returns the property value to group by.
+ * @returns An array of subarrays containing items grouped by the specified property.
+ *
+ * @example
+ * const arr = [{ foo: 1, bar: 2}, { foo: 1, bar: 3}, { foo: 2, bar: 2}];
+ * groupArrayItemsBy(arr, (item) => item.foo);
+ * // Returns: [[{ foo: 1, bar: 2}, { foo: 1, bar: 3 }], [{ foo: 2, bar: 2 }]]
+ */
+function groupArrayItemsBy(array, accessor) {
+  const groupedItems = [];
+  const groups = {};
+
+  array.forEach((item) => {
+    const key = accessor(item);
+    if (!groups[key]) {
+      groups[key] = [];
+      groupedItems.push(groups[key]);
+    }
+    groups[key].push(item);
+  });
+
+  return groupedItems;
+}
+
+/**
+ * Sorts an array by placing elements with the specified property undefined at the beginning.
+ * @param {array} array
+ * @param {function} accessor
+ */
+function sortUndefinedPropertyFirst(array, accessor) {
+  array.sort((a, b) => (accessor(a) === undefined ? -1 : 1));
 }
 
 /**
