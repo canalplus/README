@@ -519,60 +519,20 @@ function updateSearchResults(value) {
       '<div class="message">' + "No result for that search." + "</div>";
     return;
   }
+
+  // only consider the first 30 results
+  const searchResultSlice = searchResults.slice(0, 29);
+  const searchResultSorted = reorderSearchResultByGroup(searchResultSlice);
   searchResultsElt.innerHTML = "";
 
-  for (let resIdx = 0; resIdx < searchResults.length && resIdx < 30; resIdx++) {
-    const res = searchResults[resIdx];
-    const links = searchIndexLinks[+res.refIndex];
+  for (const res of searchResultSorted) {
+    const links = searchIndexLinks[+res.ref];
     const contentDiv = document.createElement("div");
     contentDiv.className = "search-result-item";
-
     const locationDiv = document.createElement("div");
     locationDiv.className = "search-result-location";
-
-    let needSeparator = false;
-    if (res.item.h1 !== undefined && res.item.h1 !== "") {
-      let linkH1;
-      if (links.anchorH1 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
-        linkH1 = document.createElement("a");
-        linkH1.href = href;
-      } else {
-        linkH1 = document.createElement("span");
-      }
-      linkH1.className = "h1";
-      linkH1.textContent = res.item.h1;
-      locationDiv.appendChild(linkH1);
-      needSeparator = true;
-    }
-
-    if (res.item.h2 !== undefined && res.item.h2 !== "") {
-      if (needSeparator) {
-        const separatorSpan = document.createElement("span");
-        separatorSpan.textContent = " > ";
-        locationDiv.appendChild(separatorSpan);
-        needSeparator = false;
-      }
-      let linkH2;
-      if (links.anchorH2 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
-        linkH2 = document.createElement("a");
-        linkH2.href = href;
-      } else {
-        linkH2 = document.createElement("span");
-      }
-      linkH2.className = "h2";
-      linkH2.textContent = res.item.h2;
-      locationDiv.appendChild(linkH2);
-      needSeparator = true;
-    }
-    if (res.item.h3 !== undefined && res.item.h3 !== "") {
-      if (needSeparator) {
-        const separatorSpan = document.createElement("span");
-        separatorSpan.textContent = " > ";
-        locationDiv.appendChild(separatorSpan);
-        needSeparator = false;
-      }
+    if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
+      contentDiv.classList.add("search-result-item-is-h3");
       let linkH3;
       if (links.anchorH3 !== undefined) {
         const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
@@ -582,12 +542,39 @@ function updateSearchResults(value) {
         linkH3 = document.createElement("span");
       }
       linkH3.className = "h3";
-      linkH3.textContent = res.item.h3;
+      linkH3.textContent = res.doc.h3;
       locationDiv.appendChild(linkH3);
+    } else if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+      contentDiv.classList.add("search-result-item-is-h2");
+      let linkH2;
+      if (links.anchorH2 !== undefined) {
+        const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
+        linkH2 = document.createElement("a");
+        linkH2.href = href;
+      } else {
+        linkH2 = document.createElement("span");
+      }
+      linkH2.className = "h2";
+      linkH2.textContent = res.doc.h2;
+      locationDiv.appendChild(linkH2);
+    } else if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
+      contentDiv.classList.add("search-result-item-is-h1");
+      let linkH1;
+      if (links.anchorH1 !== undefined) {
+        const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
+        linkH1 = document.createElement("a");
+        linkH1.href = href;
+      } else {
+        linkH1 = document.createElement("span");
+      }
+      linkH1.className = "h1";
+      linkH1.textContent = res.doc.h1;
+      locationDiv.appendChild(linkH1);
     }
+
     const bodyDiv = document.createElement("div");
     bodyDiv.className = "search-result-body";
-    let body = res.item.body ?? "";
+    let body = res.doc.body ?? "";
     if (body.length > 300) {
       body = body.substring(0, 300) + "...";
     }
@@ -597,6 +584,113 @@ function updateSearchResults(value) {
     contentDiv.appendChild(bodyDiv);
     searchResultsElt.appendChild(contentDiv);
   }
+}
+
+/**
+ * Add missing top sections headers (h1) in search results.
+ * Search result can be h1, h2 or h3, but the search algorithm can
+ * find a match for a h3 section and not for the h1.
+ * To not display h3 orphan in the tree view, we manually to
+ * the search result the h1 that is a parent to that h3.
+ * @param {array} searchResults
+ * @returns
+ */
+function addMissingTopSections(searchResults) {
+  const h1Sections = {};
+  const missingH1 = [];
+  for (result of searchResults) {
+    if (!h1Sections[result.doc.h1]) {
+      h1Sections[result.doc.h1] = [];
+    }
+    h1Sections[result.doc.h1].push(result);
+  }
+
+  for (const value of Object.values(h1Sections)) {
+    const topSection = value.find((r) => {
+      return r.doc.h2 === undefined;
+    });
+    if (topSection === undefined) {
+      const fakeH1 = structuredClone(value[0]);
+      fakeH1.doc.h2 = undefined;
+      fakeH1.doc.h3 = undefined;
+      fakeH1.doc.body = "";
+      missingH1.push(fakeH1);
+    }
+  }
+  return searchResults.concat(missingH1);
+}
+
+/**
+ * Re-orders search results by grouping them according
+ * to their shared section headings (h1, h2, h3).
+ * @param {array} searchResults The array of search results to be re-ordered.
+ * @returns An array re-ordered based on section headings.
+ *
+ * @example
+ */
+function reorderSearchResultByGroup(searchResults) {
+  const results = addMissingTopSections(searchResults);
+
+  // group by h1
+  const groupedSearchResult = groupArrayItemsBy(results, (item) => item.doc.h1);
+  // group by h2
+  for (let i = 0; i < groupedSearchResult.length; i++) {
+    // item with no h2 should be ordered before items with h2.
+    sortUndefinedPropertyFirst(groupedSearchResult[i], (item) => item.doc.h2);
+    groupedSearchResult[i] = groupArrayItemsBy(
+      groupedSearchResult[i],
+      (item) => item.doc.h2,
+    );
+    // group by h3
+    for (let j = 0; j < groupedSearchResult[i].length; j++) {
+      // item with no h3 should be ordered before items with h3.
+      sortUndefinedPropertyFirst(
+        groupedSearchResult[i][j],
+        (item) => item.doc.h3,
+      );
+      groupedSearchResult[i][j] = groupArrayItemsBy(
+        groupedSearchResult[i][j],
+        (item) => item.doc.h3,
+      );
+    }
+  }
+  return groupedSearchResult.flat(3);
+}
+
+/**
+ * Groups items in an array based on a property and returns an array of subarrays.
+ * @param {array} array The array to group.
+ * @param {function} accessor A function that returns the property value to group by.
+ * @returns An array of subarrays containing items grouped by the specified property.
+ *
+ * @example
+ * const arr = [{ foo: 1, bar: 2}, { foo: 1, bar: 3}, { foo: 2, bar: 2}];
+ * groupArrayItemsBy(arr, (item) => item.foo);
+ * // Returns: [[{ foo: 1, bar: 2}, { foo: 1, bar: 3 }], [{ foo: 2, bar: 2 }]]
+ */
+function groupArrayItemsBy(array, accessor) {
+  const groupedItems = [];
+  const groups = {};
+
+  array.forEach((item) => {
+    const key = accessor(item);
+    if (!groups[key]) {
+      groups[key] = [];
+      groupedItems.push(groups[key]);
+    }
+    groups[key].push(item);
+  });
+
+  return groupedItems;
+}
+
+/**
+ * Sorts an array by placing elements with the specified property undefined at the beginning.
+ * @param {array} array
+ * @param {function} accessor
+ */
+function sortUndefinedPropertyFirst(array, accessor) {
+  array.sort((a, b) => (accessor(a) === undefined ? -1 : 1));
 }
 
 /**
