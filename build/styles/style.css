@@ -222,6 +222,25 @@ table tr td {
   margin: 17px 0px;
 }
 
+.search-result-item-is-h2 {
+  padding-left: 40px;
+}
+
+.search-result-item-is-h3 {
+  padding-left: 80px;
+}
+
+.search-result-item-is-h1 .search-result-location::before {
+  content: "📄";
+  padding-right: 8px;
+}
+
+.search-result-item-is-h2 .search-result-location::before,
+.search-result-item-is-h3 .search-result-location::before {
+  content: "#️";
+  padding-right: 8px;
+}
+
 #search-results {
   margin-top: 20px;
   padding-bottom: 20px;

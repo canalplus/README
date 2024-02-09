@@ -572,52 +572,11 @@ function updateSearchResults(value) {
           const links = searchIndexLinks[+res.ref];
           const contentDiv = document.createElement("div");
           contentDiv.className = "search-result-item";
-
           const locationDiv = document.createElement("div");
           locationDiv.className = "search-result-location";
-          let needSeparator = false;
-          if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
-            let linkH1;
-            if (links.anchorH1 !== undefined) {
-              const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
-              linkH1 = document.createElement("a");
-              linkH1.href = href;
-            } else {
-              linkH1 = document.createElement("span");
-            }
-            linkH1.className = "h1";
-            linkH1.textContent = res.doc.h1;
-            locationDiv.appendChild(linkH1);
-            needSeparator = true;
-          }
-
-          if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
-            if (needSeparator) {
-              const separatorSpan = document.createElement("span");
-              separatorSpan.textContent = " > ";
-              locationDiv.appendChild(separatorSpan);
-              needSeparator = false;
-            }
-            let linkH2;
-            if (links.anchorH2 !== undefined) {
-              const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
-              linkH2 = document.createElement("a");
-              linkH2.href = href;
-            } else {
-              linkH2 = document.createElement("span");
-            }
-            linkH2.className = "h2";
-            linkH2.textContent = res.doc.h2;
-            locationDiv.appendChild(linkH2);
-            needSeparator = true;
-          }
           if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
-            if (needSeparator) {
-              const separatorSpan = document.createElement("span");
-              separatorSpan.textContent = " > ";
-              locationDiv.appendChild(separatorSpan);
-              needSeparator = false;
-            }
+            contentDiv.className += " search-result-item-is-h3";
+
             let linkH3;
             if (links.anchorH3 !== undefined) {
               const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
@@ -629,7 +588,34 @@ function updateSearchResults(value) {
             linkH3.className = "h3";
             linkH3.textContent = res.doc.h3;
             locationDiv.appendChild(linkH3);
+          } else if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+            contentDiv.className += " search-result-item-is-h2";
+            let linkH2;
+            if (links.anchorH2 !== undefined) {
+              const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
+              linkH2 = document.createElement("a");
+              linkH2.href = href;
+            } else {
+              linkH2 = document.createElement("span");
+            }
+            linkH2.className = "h2";
+            linkH2.textContent = res.doc.h2;
+            locationDiv.appendChild(linkH2);
+          } else if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
+            contentDiv.className += " search-result-item-is-h1";
+            let linkH1;
+            if (links.anchorH1 !== undefined) {
+              const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
+              linkH1 = document.createElement("a");
+              linkH1.href = href;
+            } else {
+              linkH1 = document.createElement("span");
+            }
+            linkH1.className = "h1";
+            linkH1.textContent = res.doc.h1;
+            locationDiv.appendChild(linkH1);
           }
+
           const bodyDiv = document.createElement("div");
           bodyDiv.className = "search-result-body";
           let body = res.doc.body ?? "";
