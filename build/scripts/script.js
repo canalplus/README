@@ -578,6 +578,41 @@ function updateSearchResults(value) {
     searchResultsElt.appendChild(contentDiv);
   }
 }
+
+/**
+ * Add missing top sections headers (h1) in search results.
+ * Search result can be h1, h2 or h3, but the search algorithm can
+ * find a match for a h3 section and not for the h1.
+ * To not display h3 orphan in the tree view, we manually to
+ * the search result the h1 that is a parent to that h3.
+ * @param {array} searchResults
+ * @returns
+ */
+function addMissingTopSections(searchResults) {
+  const h1Sections = {};
+  const missingH1 = [];
+  for (result of searchResults) {
+    if (!h1Sections[result.doc.h1]) {
+      h1Sections[result.doc.h1] = [];
+    }
+    h1Sections[result.doc.h1].push(result);
+  }
+
+  for (const value of Object.values(h1Sections)) {
+    const topSection = value.find((r) => {
+      return r.doc.h2 === undefined;
+    });
+    if (topSection === undefined) {
+      const fakeH1 = structuredClone(value[0]);
+      fakeH1.doc.h2 = undefined;
+      fakeH1.doc.h3 = undefined;
+      fakeH1.doc.body = "";
+      missingH1.push(fakeH1);
+    }
+  }
+  return searchResults.concat(missingH1);
+}
+
 /**
  * Re-orders search results by grouping them according
  * to their shared section headings (h1, h2, h3).
@@ -587,11 +622,10 @@ function updateSearchResults(value) {
  * @example
  */
 function reorderSearchResultByGroup(searchResults) {
+  const results = addMissingTopSections(searchResults);
+
   // group by h1
-  const groupedSearchResult = groupArrayItemsBy(
-    searchResults,
-    (item) => item.doc.h1,
-  );
+  const groupedSearchResult = groupArrayItemsBy(results, (item) => item.doc.h1);
   // group by h2
   for (let i = 0; i < groupedSearchResult.length; i++) {
     // item with no h2 should be ordered before items with h2.
@@ -613,8 +647,7 @@ function reorderSearchResultByGroup(searchResults) {
       );
     }
   }
-  const flatSearchResult = groupedSearchResult.flat(3);
-  return flatSearchResult;
+  return groupedSearchResult.flat(3);
 }
 
 /**
