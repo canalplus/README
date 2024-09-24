@@ -110,7 +110,11 @@ properties indicated as "optional" can be omitted:
       // Can be ignored in which case the version is not clickable
       "link": "https://example.com/documentation_pages_by_version.html",
     }
-  ]
+  ],
+  // Optional string that specifies the base URL that would be used when generating
+  // the sitemap.xml file. 
+  // If not defined, the generation of the sitemap.xml file will be omitted.
+  "siteMapRoot": "https://example.com/"
 }
 ```
 
