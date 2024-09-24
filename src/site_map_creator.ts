@@ -43,12 +43,31 @@ export class SiteMapCreator {
     ${this.siteMapEntry
       .map(
         (entry) => `<url>
-      <loc>${entry.loc}</loc>
-      <lastmod>${entry.lastmod}</lastmod>
+      <loc>${escapeXml(entry.loc)}</loc>
+      <lastmod>${escapeXml(entry.lastmod)}</lastmod>
     </url>
     `,
       )
       .join("")}
   </urlset>`;
   }
+}
+
+function escapeXml(unsafe: string) {
+  return unsafe.replace(/[<>&'"]/g, (c: string) => {
+    switch (c) {
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case "'":
+        return "&apos;";
+      case '"':
+        return "&quot;";
+      default:
+        return "";
+    }
+  });
 }
