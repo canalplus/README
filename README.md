@@ -38,7 +38,8 @@ at the
 and compare it to its
 [original markdown files](https://github.com/canalplus/rx-player/tree/master/doc/Getting_Started).
 
-You can also look at [README's own documentation](https://peaberberian.github.io/README/doc/Getting_Started/Home.html)
+You can also look at
+[README's own documentation](https://peaberberian.github.io/README/doc/Getting_Started/Home.html)
 and compare it to its
 [original markdown files](https://github.com/canalplus/README/tree/main/doc/Getting_Started).
 
@@ -68,7 +69,8 @@ readme.doc --version
 
 ## How to use it
 
-See our [complete documentation](https://peaberberian.github.io/README/doc/Getting_Started/Home.html)
+See our
+[complete documentation](https://peaberberian.github.io/README/doc/Getting_Started/Home.html)
 (which is itself generated with README :)!)
 
 ## Why a new documentation generator
