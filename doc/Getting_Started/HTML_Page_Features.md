@@ -9,20 +9,16 @@ they have many supplementary features when JavaScript is enabled.
 ## Search
 
 Search in README is achieved without involving a third-party thanks to the
-[elastic lunr](http://elasticlunr.com/) library.
+[Fuse.js](https://www.fusejs.io) library.
 
 The idea is that an index is generated when your documentation is built, and
 that index is fetched the first time you search on the generated HTML page.
-Elastic lunr then searches through that index to provide matches that are then
+Fuse.js then searches through that index to provide matches that are then
 display in the page.
 
 Doing the search locally has the advantage of not having to rely on third
 parties for your search. It also allows to have a much faster search experience
 than if a server was requested for each search input.
-
-Note however that elastic lunr is quite old and that some more recent local
-search implementations exist that we're looking at today with the goal of
-improving search accuracy.
 
 ## Soft navigation
 

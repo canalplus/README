@@ -45,9 +45,11 @@ const searchState = {
  */
 let currentlyWantedPage = null;
 
+let fuse = null;
+
 /**
  * Contains the links to search results.
- * The elements of this array are in this same order than `elasticlunr`'s index.
+ * The elements of this array are in this same order than `Fuse.js`'s index.
  * @type {Array.<Object>}
  */
 let searchIndexLinks = [];
@@ -88,15 +90,7 @@ const spinnerSvg = `<svg
   />
 </svg>`;
 
-/** Pre-initialize our search engine library with the right fields. */
-const searchEngine = elasticlunr(function () {
-  this.addField("h1");
-  this.addField("h2");
-  this.addField("h3");
-  this.addField("body");
-  this.setRef("id");
-});
-
+const pageIndex = [];
 /**
  * Perform all actions and register all event handlers that should be done in
  * the page.
@@ -444,7 +438,7 @@ function initializeSearchEngine() {
             anchorH2: elt.anchorH2,
             anchorH3: elt.anchorH3,
           });
-          searchEngine.addDoc({
+          pageIndex.push({
             h1: elt.h1,
             h2: elt.h2,
             h3: elt.h3,
@@ -454,6 +448,27 @@ function initializeSearchEngine() {
           id++;
         }
       }
+      fuse = new Fuse(pageIndex, {
+        // includeScore: true,
+        keys: [
+          {
+            name: "h1",
+            weight: 100,
+          },
+          {
+            name: "h2",
+            weight: 80,
+          },
+          {
+            name: "h3",
+            weight: 10,
+          },
+          {
+            name: "body",
+            weight: 1,
+          },
+        ],
+      });
       searchState.initStatus = "loaded";
     })
     .catch((err) => {
@@ -498,24 +513,17 @@ function updateSearchResults(value) {
   }
   searchState.lastSearch = value;
 
-  const searchResults = searchEngine.search(value, {
-    fields: {
-      h1: { boost: 5, bool: "AND" },
-      h2: { boost: 4, bool: "AND" },
-      h3: { boost: 3, bool: "AND" },
-      body: { boost: 1 },
-    },
-    expand: true,
-  });
+  const searchResults = fuse.search(value);
   if (searchResults.length === 0) {
     searchResultsElt.innerHTML =
       '<div class="message">' + "No result for that search." + "</div>";
     return;
   }
   searchResultsElt.innerHTML = "";
+
   for (let resIdx = 0; resIdx < searchResults.length && resIdx < 30; resIdx++) {
     const res = searchResults[resIdx];
-    const links = searchIndexLinks[+res.ref];
+    const links = searchIndexLinks[+res.refIndex];
     const contentDiv = document.createElement("div");
     contentDiv.className = "search-result-item";
 
@@ -523,7 +531,7 @@ function updateSearchResults(value) {
     locationDiv.className = "search-result-location";
 
     let needSeparator = false;
-    if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
+    if (res.item.h1 !== undefined && res.item.h1 !== "") {
       let linkH1;
       if (links.anchorH1 !== undefined) {
         const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
@@ -533,12 +541,12 @@ function updateSearchResults(value) {
         linkH1 = document.createElement("span");
       }
       linkH1.className = "h1";
-      linkH1.textContent = res.doc.h1;
+      linkH1.textContent = res.item.h1;
       locationDiv.appendChild(linkH1);
       needSeparator = true;
     }
 
-    if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
+    if (res.item.h2 !== undefined && res.item.h2 !== "") {
       if (needSeparator) {
         const separatorSpan = document.createElement("span");
         separatorSpan.textContent = " > ";
@@ -554,11 +562,11 @@ function updateSearchResults(value) {
         linkH2 = document.createElement("span");
       }
       linkH2.className = "h2";
-      linkH2.textContent = res.doc.h2;
+      linkH2.textContent = res.item.h2;
       locationDiv.appendChild(linkH2);
       needSeparator = true;
     }
-    if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
+    if (res.item.h3 !== undefined && res.item.h3 !== "") {
       if (needSeparator) {
         const separatorSpan = document.createElement("span");
         separatorSpan.textContent = " > ";
@@ -574,12 +582,12 @@ function updateSearchResults(value) {
         linkH3 = document.createElement("span");
       }
       linkH3.className = "h3";
-      linkH3.textContent = res.doc.h3;
+      linkH3.textContent = res.item.h3;
       locationDiv.appendChild(linkH3);
     }
     const bodyDiv = document.createElement("div");
     bodyDiv.className = "search-result-body";
-    let body = res.doc.body ?? "";
+    let body = res.item.body ?? "";
     if (body.length > 300) {
       body = body.substring(0, 300) + "...";
     }

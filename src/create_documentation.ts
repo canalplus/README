@@ -445,7 +445,7 @@ async function copyCssFiles(baseOutDir: string): Promise<string[]> {
 async function copyJavaScriptFiles(baseOutDir: string): Promise<string[]> {
   const scriptOutputDir = path.join(path.resolve(baseOutDir), "scripts");
   const scripts = [
-    path.join(currentDir, "scripts/lunr.js"),
+    path.join(currentDir, "scripts/fuse.js.js"),
     path.join(currentDir, "scripts/script.js"),
   ];
   const outputPaths = scripts.map((s) =>
