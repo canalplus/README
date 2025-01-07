@@ -48,7 +48,7 @@ export interface DocumentationCreationOptions {
 export default async function createDocumentation(
   baseInDir: string,
   baseOutDir: string,
-  options: DocumentationCreationOptions = {}
+  options: DocumentationCreationOptions = {},
 ): Promise<void> {
   if (options.clean === true) {
     rimrafSync(baseOutDir);
@@ -138,7 +138,7 @@ export default async function createDocumentation(
   Anchor:         ${check.anchor}
 `;
         const availableAnchors = anchorChecker.getAnchorsForInputFile(
-          check.inputFileLinkDestination
+          check.inputFileLinkDestination,
         );
         if (availableAnchors !== undefined && availableAnchors.length > 0) {
           message +=
@@ -152,7 +152,7 @@ export default async function createDocumentation(
   try {
     const searchIndexLoc = path.join(
       path.resolve(baseOutDir),
-      "searchIndex.json"
+      "searchIndex.json",
     );
     await promisify(fs.writeFile)(searchIndexLoc, JSON.stringify(searchIndex));
   } catch (err) {
@@ -210,21 +210,21 @@ export default async function createDocumentation(
       config.links,
       linkIndexInConfig,
       pageIndexesInLink,
-      outputFile
+      outputFile,
     );
     const navBarHtml = generateHeaderHtml(
       config,
       linkIndexInConfig,
       outputFile,
       logoInfo,
-      version
+      version,
     );
     const pages = link.pages;
     const sidebarHtml = generateSidebarHtml(
       pages,
       pageIndexesInLink,
       outputFile,
-      logoInfo
+      logoInfo,
     );
 
     const firstLevelPage = pages[pageIndexesInLink[0]];
@@ -268,10 +268,10 @@ export default async function createDocumentation(
         : getRelativePageInfo(nextPageConfig, outputFile);
 
     const cssUrls = cssOutputPaths.map((cssOutput) =>
-      toUriCompatibleRelativePath(cssOutput, outDir)
+      toUriCompatibleRelativePath(cssOutput, outDir),
     );
     const scriptUrls = scriptOutputPaths.map((s) =>
-      toUriCompatibleRelativePath(s, outDir)
+      toUriCompatibleRelativePath(s, outDir),
     );
 
     // add link translation to options
@@ -279,7 +279,7 @@ export default async function createDocumentation(
       inputFile,
       outputFile,
       fileMap,
-      anchorChecker
+      anchorChecker,
     );
     const { anchors } = await createDocumentationPage({
       baseOutDir,
@@ -313,7 +313,7 @@ function linkTranslatorFactory(
   inputFile: string,
   outputFile: string,
   fileMap: Map<string, string>,
-  anchorChecker: AnchorChecker
+  anchorChecker: AnchorChecker,
 ): (link: string) => string | undefined {
   const outputDir = path.dirname(outputFile);
   /**
@@ -346,13 +346,13 @@ function linkTranslatorFactory(
         `A referenced link was not found.
   File: ${inputFile}
   Link: ${link}
-`
+`,
       );
     } else if (anchor.length > 1) {
       anchorChecker.addAnchorReference(
         inputFile,
         normalizedLink,
-        anchor.substring(1)
+        anchor.substring(1),
       );
     }
     return translation !== undefined
@@ -363,7 +363,7 @@ function linkTranslatorFactory(
 
 function getRelativePageInfo(
   pageConfig: LocalDocPageInformation,
-  currentPath: string
+  currentPath: string,
 ): {
   name: string;
   link: string;
@@ -371,7 +371,7 @@ function getRelativePageInfo(
   const { displayName: pDisplayName, outputFile: pOutputFile } = pageConfig;
   const relativeHref = toUriCompatibleRelativePath(
     pOutputFile,
-    path.dirname(currentPath)
+    path.dirname(currentPath),
   );
   return { name: pDisplayName, link: relativeHref };
 }
@@ -379,7 +379,7 @@ function getRelativePageInfo(
 async function copyFileToOutputDir(
   filePathFromInputDir: string,
   inputDir: string,
-  outputDir: string
+  outputDir: string,
 ) {
   const inputPath = path.join(inputDir, filePathFromInputDir);
   const outputPath = path.join(outputDir, filePathFromInputDir);
@@ -401,7 +401,7 @@ async function copyFileToOutputDir(
       const srcMessage =
         ((err as { message: string }) ?? {}).message ?? "Unknown error";
       throw new Error(
-        `Could not create "${outputPath}" directory: ${srcMessage}`
+        `Could not create "${outputPath}" directory: ${srcMessage}`,
       );
     }
   }
@@ -437,7 +437,7 @@ async function copyCssFiles(baseOutDir: string): Promise<string[]> {
   await Promise.all(
     cssFiles.map(async (cssInput: string, i: number) => {
       await promisify(fs.copyFile)(cssInput, outputPaths[i]);
-    })
+    }),
   );
   return outputPaths;
 }
@@ -445,18 +445,18 @@ async function copyCssFiles(baseOutDir: string): Promise<string[]> {
 async function copyJavaScriptFiles(baseOutDir: string): Promise<string[]> {
   const scriptOutputDir = path.join(path.resolve(baseOutDir), "scripts");
   const scripts = [
-    path.join(currentDir, "scripts/fuse.js.js"),
+    path.join(currentDir, "scripts/fuse.js"),
     path.join(currentDir, "scripts/script.js"),
   ];
   const outputPaths = scripts.map((s) =>
-    path.join(scriptOutputDir, path.basename(s))
+    path.join(scriptOutputDir, path.basename(s)),
   );
 
   await createDirIfDoesntExist(scriptOutputDir);
   await Promise.all(
     scripts.map(async (s, i) => {
       await promisify(fs.copyFile)(s, outputPaths[i]);
-    })
+    }),
   );
   return outputPaths;
 }
