@@ -568,10 +568,11 @@ function addMissingTopSections(searchResults) {
   const h1Sections = {};
   const missingH1 = [];
   for (result of searchResults) {
-    if (!h1Sections[result.item.h1]) {
-      h1Sections[result.item.h1] = [];
+    const keyName = `${result.item.file}-${result.item.h1}`;
+    if (!h1Sections[keyName]) {
+      h1Sections[keyName] = [];
     }
-    h1Sections[result.item.h1].push(result);
+    h1Sections[keyName].push(result);
   }
 
   for (const value of Object.values(h1Sections)) {
