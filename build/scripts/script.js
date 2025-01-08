@@ -439,6 +439,7 @@ function initializeSearchEngine() {
             anchorH3: elt.anchorH3,
           });
           pageIndex.push({
+            file: res[i].file,
             h1: elt.h1,
             h2: elt.h2,
             h3: elt.h3,
@@ -525,64 +526,32 @@ function updateSearchResults(value) {
   const searchResultSorted = reorderSearchResultByGroup(searchResultSlice);
   searchResultsElt.innerHTML = "";
 
-  for (const res of searchResultSorted) {
-    const links = searchIndexLinks[+res.ref];
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "search-result-item";
-    const locationDiv = document.createElement("div");
-    locationDiv.className = "search-result-location";
-    if (res.doc.h3 !== undefined && res.doc.h3 !== "") {
-      contentDiv.classList.add("search-result-item-is-h3");
-      let linkH3;
-      if (links.anchorH3 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH3;
-        linkH3 = document.createElement("a");
-        linkH3.href = href;
-      } else {
-        linkH3 = document.createElement("span");
+  for (const file of Object.values(searchResultSorted)) {
+    for (const h1 of Object.values(file)) {
+      if (h1.__DEFAULT__) {
+        const elem = createResultElement(h1.__DEFAULT__);
+        searchResultsElt.appendChild(elem);
       }
-      linkH3.className = "h3";
-      linkH3.textContent = res.doc.h3;
-      locationDiv.appendChild(linkH3);
-    } else if (res.doc.h2 !== undefined && res.doc.h2 !== "") {
-      contentDiv.classList.add("search-result-item-is-h2");
-      let linkH2;
-      if (links.anchorH2 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH2;
-        linkH2 = document.createElement("a");
-        linkH2.href = href;
-      } else {
-        linkH2 = document.createElement("span");
-      }
-      linkH2.className = "h2";
-      linkH2.textContent = res.doc.h2;
-      locationDiv.appendChild(linkH2);
-    } else if (res.doc.h1 !== undefined && res.doc.h1 !== "") {
-      contentDiv.classList.add("search-result-item-is-h1");
-      let linkH1;
-      if (links.anchorH1 !== undefined) {
-        const href = rootUrl + "/" + links.file + "#" + links.anchorH1;
-        linkH1 = document.createElement("a");
-        linkH1.href = href;
-      } else {
-        linkH1 = document.createElement("span");
-      }
-      linkH1.className = "h1";
-      linkH1.textContent = res.doc.h1;
-      locationDiv.appendChild(linkH1);
-    }
+      for (const [keyH2, valueH2] of Object.entries(h1)) {
+        if (keyH2 === "__DEFAULT__") {
+          continue;
+        }
+        if (valueH2.__DEFAULT__) {
+          const elem = createResultElement(valueH2.__DEFAULT__);
+          searchResultsElt.appendChild(elem);
+        }
 
-    const bodyDiv = document.createElement("div");
-    bodyDiv.className = "search-result-body";
-    let body = res.doc.body ?? "";
-    if (body.length > 300) {
-      body = body.substring(0, 300) + "...";
+        for (const [keyH3, valueH3] of Object.entries(valueH2)) {
+          if (keyH3 === "__DEFAULT__") {
+            continue;
+          }
+          valueH3.forEach((val) => {
+            const elem = createResultElement(val);
+            searchResultsElt.appendChild(elem);
+          });
+        }
+      }
     }
-    bodyDiv.textContent = body;
-
-    contentDiv.appendChild(locationDiv);
-    contentDiv.appendChild(bodyDiv);
-    searchResultsElt.appendChild(contentDiv);
   }
 }
 
@@ -590,7 +559,7 @@ function updateSearchResults(value) {
  * Add missing top sections headers (h1) in search results.
  * Search result can be h1, h2 or h3, but the search algorithm can
  * find a match for a h3 section and not for the h1.
- * To not display h3 orphan in the tree view, we manually to
+ * To not display h3 orphan in the tree view, we manually add to
  * the search result the h1 that is a parent to that h3.
  * @param {array} searchResults
  * @returns
@@ -599,21 +568,21 @@ function addMissingTopSections(searchResults) {
   const h1Sections = {};
   const missingH1 = [];
   for (result of searchResults) {
-    if (!h1Sections[result.doc.h1]) {
-      h1Sections[result.doc.h1] = [];
+    if (!h1Sections[result.item.h1]) {
+      h1Sections[result.item.h1] = [];
     }
-    h1Sections[result.doc.h1].push(result);
+    h1Sections[result.item.h1].push(result);
   }
 
   for (const value of Object.values(h1Sections)) {
     const topSection = value.find((r) => {
-      return r.doc.h2 === undefined;
+      return r.item.h2 === undefined;
     });
     if (topSection === undefined) {
       const fakeH1 = structuredClone(value[0]);
-      fakeH1.doc.h2 = undefined;
-      fakeH1.doc.h3 = undefined;
-      fakeH1.doc.body = "";
+      fakeH1.item.h2 = undefined;
+      fakeH1.item.h3 = undefined;
+      fakeH1.item.body = "";
       missingH1.push(fakeH1);
     }
   }
@@ -632,56 +601,56 @@ function reorderSearchResultByGroup(searchResults) {
   const results = addMissingTopSections(searchResults);
 
   // group by h1
-  const groupedSearchResult = groupArrayItemsBy(results, (item) => item.doc.h1);
-  // group by h2
-  for (let i = 0; i < groupedSearchResult.length; i++) {
-    // item with no h2 should be ordered before items with h2.
-    sortUndefinedPropertyFirst(groupedSearchResult[i], (item) => item.doc.h2);
-    groupedSearchResult[i] = groupArrayItemsBy(
-      groupedSearchResult[i],
-      (item) => item.doc.h2,
-    );
-    // group by h3
-    for (let j = 0; j < groupedSearchResult[i].length; j++) {
-      // item with no h3 should be ordered before items with h3.
-      sortUndefinedPropertyFirst(
-        groupedSearchResult[i][j],
-        (item) => item.doc.h3,
-      );
-      groupedSearchResult[i][j] = groupArrayItemsBy(
-        groupedSearchResult[i][j],
-        (item) => item.doc.h3,
-      );
-    }
-  }
-  return groupedSearchResult.flat(3);
+  const groupedSearchResult = groupItems(results);
+
+  return groupedSearchResult;
 }
 
 /**
- * Groups items in an array based on a property and returns an array of subarrays.
+ * Groups items in an array based on their h1, h2 and h3 titles.
  * @param {array} array The array to group.
- * @param {function} accessor A function that returns the property value to group by.
- * @returns An array of subarrays containing items grouped by the specified property.
- *
- * @example
- * const arr = [{ foo: 1, bar: 2}, { foo: 1, bar: 3}, { foo: 2, bar: 2}];
- * groupArrayItemsBy(arr, (item) => item.foo);
- * // Returns: [[{ foo: 1, bar: 2}, { foo: 1, bar: 3 }], [{ foo: 2, bar: 2 }]]
+ * @returns An object containing items grouped.
  */
-function groupArrayItemsBy(array, accessor) {
-  const groupedItems = [];
-  const groups = {};
+function groupItems(results) {
+  const grouping = {};
 
-  array.forEach((item) => {
-    const key = accessor(item);
-    if (!groups[key]) {
-      groups[key] = [];
-      groupedItems.push(groups[key]);
+  results.forEach((res) => {
+    let item = res.item;
+
+    if (!grouping[item.file]) {
+      grouping[item.file] = {};
     }
-    groups[key].push(item);
-  });
+    // Create the h1 key
+    if (!grouping[item.file][item.h1]) {
+      grouping[item.file][item.h1] = {};
+    }
 
-  return groupedItems;
+    // Create the h2 key, if exists
+    if (item.h2) {
+      if (!grouping[item.file][item.h1][item.h2]) {
+        grouping[item.file][item.h1][item.h2] = {};
+      }
+
+      // Create the h3 key, if exists
+      if (item.h3) {
+        if (!grouping[item.file][item.h1][item.h2][item.h3]) {
+          grouping[item.file][item.h1][item.h2][item.h3] = [];
+        }
+        grouping[item.file][item.h1][item.h2][item.h3].push(item);
+      } else {
+        // If no h3, use '__DEFAULT__'
+        if (!grouping[item.file][item.h1][item.h2]["__DEFAULT__"]) {
+          grouping[item.file][item.h1][item.h2]["__DEFAULT__"] = item;
+        }
+      }
+    } else {
+      // If no h2, use '__DEFAULT__' under h1
+      if (!grouping[item.file][item.h1]["__DEFAULT__"]) {
+        grouping[item.file][item.h1]["__DEFAULT__"] = item;
+      }
+    }
+  });
+  return grouping;
 }
 
 /**
@@ -1124,4 +1093,60 @@ function getSearchIconElements() {
  */
 function getSearchWrapperElement() {
   return document.getElementById("search-wrapper");
+}
+
+function createResultElement(item) {
+  const links = searchIndexLinks[+item.id];
+  let elementLevel = item.h2 ? (item.h3 ? "h3" : "h2") : "h1";
+  const contentDiv = document.createElement("div");
+  contentDiv.className = "search-result-item";
+  const locationDiv = document.createElement("div");
+  locationDiv.className = "search-result-location";
+
+  let href;
+  let textContent;
+  if (elementLevel === "h3") {
+    contentDiv.classList.add("search-result-item-is-h3");
+    if (links.anchorH3 !== undefined) {
+      href = rootUrl + "/" + links.file + "#" + links.anchorH3;
+    }
+    textContent = item.h3;
+  } else if (elementLevel === "h2") {
+    contentDiv.classList.add("search-result-item-is-h2");
+    if (links.anchorH2 !== undefined) {
+      href = rootUrl + "/" + links.file + "#" + links.anchorH2;
+    }
+    textContent = item.h2;
+  } else if (elementLevel === "h1") {
+    contentDiv.classList.add("search-result-item-is-h1");
+    if (links.anchorH1 !== undefined) {
+      href = rootUrl + "/" + links.file + "#" + links.anchorH1;
+    }
+    textContent = item.h1;
+  }
+
+  let anchorElement;
+  if (href) {
+    anchorElement = document.createElement("a");
+    anchorElement.href = href;
+  } else {
+    anchorElement = document.createElement("span");
+  }
+
+  anchorElement.textContent = textContent;
+  anchorElement.className = elementLevel;
+  locationDiv.appendChild(anchorElement);
+
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "search-result-body";
+  let body = item.body ?? "";
+  if (body.length > 300) {
+    body = body.substring(0, 300) + "...";
+  }
+  bodyDiv.textContent = body;
+
+  contentDiv.appendChild(locationDiv);
+  contentDiv.appendChild(bodyDiv);
+
+  return contentDiv;
 }

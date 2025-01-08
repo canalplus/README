@@ -2,6 +2,7 @@ import type { AnyNode } from "cheerio";
 import { load } from "cheerio";
 
 export interface FileSearchIndex {
+  fileURL: string;
   h1: string | undefined;
   h2?: string | undefined;
   h3?: string | undefined;
@@ -18,6 +19,7 @@ export interface FileSearchIndex {
  */
 export default function getSearchDataForContent(
   contentHtml: string,
+  fileURL: string,
 ): FileSearchIndex[] {
   const indexForFile: FileSearchIndex[] = [];
   const $ = load(contentHtml);
@@ -87,6 +89,7 @@ export default function getSearchDataForContent(
     if (currentLevel === "h3") {
       const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
+        fileURL,
         h1: currentH1,
         h2: currentH2,
         h3: currentH3,
@@ -98,6 +101,7 @@ export default function getSearchDataForContent(
     } else if (currentLevel === "h2") {
       const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
+        fileURL,
         h1: currentH1,
         h2: currentH2,
         body,
@@ -107,6 +111,7 @@ export default function getSearchDataForContent(
     } else if (currentLevel === "h1") {
       const body = currentBody.length > 0 ? currentBody.join(" ") : "";
       indexForFile.push({
+        fileURL,
         h1: currentH1,
         body,
         anchorH1: currentH1Anchor,
