@@ -479,6 +479,8 @@ function initializeSearchEngine() {
   return searchState.promise;
 }
 
+const __DEFAULT_SYMBOL__ = Symbol("__DEFAULT__");
+
 /**
  * Update search result in the search result HTMLElement according to the given
  * value.
@@ -528,21 +530,21 @@ function updateSearchResults(value) {
 
   for (const file of Object.values(searchResultSorted)) {
     for (const h1 of Object.values(file)) {
-      if (h1.__DEFAULT__) {
-        const elem = createResultElement(h1.__DEFAULT__);
+      if (h1[__DEFAULT_SYMBOL__]) {
+        const elem = createResultElement(h1[__DEFAULT_SYMBOL__]);
         searchResultsElt.appendChild(elem);
       }
       for (const [keyH2, valueH2] of Object.entries(h1)) {
-        if (keyH2 === "__DEFAULT__") {
+        if (keyH2 === __DEFAULT_SYMBOL__) {
           continue;
         }
-        if (valueH2.__DEFAULT__) {
-          const elem = createResultElement(valueH2.__DEFAULT__);
+        if (valueH2[__DEFAULT_SYMBOL__]) {
+          const elem = createResultElement(valueH2[__DEFAULT_SYMBOL__]);
           searchResultsElt.appendChild(elem);
         }
 
         for (const [keyH3, valueH3] of Object.entries(valueH2)) {
-          if (keyH3 === "__DEFAULT__") {
+          if (keyH3 === __DEFAULT_SYMBOL__) {
             continue;
           }
           valueH3.forEach((val) => {
@@ -606,7 +608,6 @@ function reorderSearchResultByGroup(searchResults) {
 
   return groupedSearchResult;
 }
-
 /**
  * Groups items in an array based on their h1, h2 and h3 titles.
  * @param {array} array The array to group.
@@ -640,27 +641,18 @@ function groupItems(results) {
         grouping[item.file][item.h1][item.h2][item.h3].push(item);
       } else {
         // If no h3, use '__DEFAULT__'
-        if (!grouping[item.file][item.h1][item.h2]["__DEFAULT__"]) {
-          grouping[item.file][item.h1][item.h2]["__DEFAULT__"] = item;
+        if (!grouping[item.file][item.h1][item.h2][__DEFAULT_SYMBOL__]) {
+          grouping[item.file][item.h1][item.h2][__DEFAULT_SYMBOL__] = item;
         }
       }
     } else {
       // If no h2, use '__DEFAULT__' under h1
-      if (!grouping[item.file][item.h1]["__DEFAULT__"]) {
-        grouping[item.file][item.h1]["__DEFAULT__"] = item;
+      if (!grouping[item.file][item.h1][__DEFAULT_SYMBOL__]) {
+        grouping[item.file][item.h1][__DEFAULT_SYMBOL__] = item;
       }
     }
   });
   return grouping;
-}
-
-/**
- * Sorts an array by placing elements with the specified property undefined at the beginning.
- * @param {array} array
- * @param {function} accessor
- */
-function sortUndefinedPropertyFirst(array, accessor) {
-  array.sort((a, b) => (accessor(a) === undefined ? -1 : 1));
 }
 
 /**
