@@ -479,6 +479,9 @@ function initializeSearchEngine() {
   return searchState.promise;
 }
 
+// Symbol are guaranteed to be unique.
+// So there will be no overlap between this symbol or any string
+// when it's used as a key to access an object property.
 const __DEFAULT_SYMBOL__ = Symbol("__DEFAULT__");
 
 /**
