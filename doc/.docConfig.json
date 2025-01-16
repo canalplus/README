@@ -29,5 +29,6 @@
     {
       "type": "version"
     }
-  ]
+  ],
+  "siteMapRoot": "https://peaberberian.github.io/README/doc/"
 }

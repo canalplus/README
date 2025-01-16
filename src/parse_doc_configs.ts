@@ -54,6 +54,7 @@ interface RootDocConfigInput {
   };
   linksLeft?: unknown[];
   linksRight?: unknown[];
+  siteMapRoot?: string;
 }
 
 interface InnerDocConfigInput {
@@ -93,6 +94,7 @@ export interface ParsedDocConfig {
       };
   links: LinkCategory[];
   linksRightIndex: number;
+  siteMapRoot: undefined | string;
 }
 
 export default async function parseDocConfigs(
@@ -106,6 +108,7 @@ export default async function parseDocConfigs(
     favicon: undefined,
     links: [],
     linksRightIndex: -1,
+    siteMapRoot: undefined,
   };
 
   if (typeof rootConfig.logo === "object") {
@@ -215,6 +218,10 @@ export default async function parseDocConfigs(
     if (parsedCategory !== undefined) {
       ret.links.push(parsedCategory);
     }
+  }
+
+  if (typeof rootConfig.siteMapRoot === "string") {
+    ret.siteMapRoot = rootConfig.siteMapRoot;
   }
   return ret;
 }
@@ -407,6 +414,12 @@ async function parseAndCheckRootConfigFile(
   if ("linksRight" in config && !Array.isArray(config.linksRight)) {
     exitWithInvalidRootConfig(
       `The "linksRight" property, if defined, should be set as an Array.`,
+    );
+  }
+
+  if ("siteMapRoot" in config && typeof config.siteMapRoot !== "string") {
+    exitWithInvalidRootConfig(
+      `The "siteMapRoot" property, if defined, should be a string.`,
     );
   }
 
