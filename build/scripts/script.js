@@ -527,37 +527,52 @@ function updateSearchResults(value) {
   }
 
   // only consider the first 30 results
-  const searchResultSlice = searchResults.slice(0, 29);
-  const searchResultSorted = reorderSearchResultByGroup(searchResultSlice);
+  const searchResultsSliced = searchResults.slice(0, 29);
+  const searchResultSorted = reorderSearchResults(searchResultsSliced);
   searchResultsElt.innerHTML = "";
 
-  for (const file of Object.values(searchResultSorted)) {
-    for (const h1 of Object.values(file)) {
-      if (h1[__DEFAULT_SYMBOL__]) {
-        const elem = createResultElement(h1[__DEFAULT_SYMBOL__]);
-        searchResultsElt.appendChild(elem);
-      }
-      for (const [keyH2, valueH2] of Object.entries(h1)) {
-        if (keyH2 === __DEFAULT_SYMBOL__) {
-          continue;
-        }
-        if (valueH2[__DEFAULT_SYMBOL__]) {
-          const elem = createResultElement(valueH2[__DEFAULT_SYMBOL__]);
-          searchResultsElt.appendChild(elem);
-        }
-
-        for (const [keyH3, valueH3] of Object.entries(valueH2)) {
-          if (keyH3 === __DEFAULT_SYMBOL__) {
-            continue;
-          }
-          valueH3.forEach((val) => {
-            const elem = createResultElement(val);
-            searchResultsElt.appendChild(elem);
-          });
-        }
-      }
-    }
+  let previousItem = null;
+  for (const searchResult of searchResultSorted) {
+    let displayFromLevel =
+      previousItem === null
+        ? 0
+        : getCommonAncestorLevel(searchResult, previousItem);
+    previousItem = searchResult;
+    const elems = createHeadingElements(searchResult, displayFromLevel);
+    elems.forEach((elem) => searchResultsElt.appendChild(elem));
   }
+}
+
+/**
+ * Compares two search result items to determine the deepest common ancestor based on their properties.
+ *
+ * The comparison order is:
+ * 1. `file` - If files don't match, return 3.
+ * 2. `h1` - If `file` matches but `h1` doesn't, return 2.
+ * 3. `h2` - If both `file` and `h1` match but `h2` doesn't, return 1.
+ * 4. If all properties match, return 0 (indicating the deepest common ancestor).
+ *
+ * @param {Object} itemA - The first search result item.
+ * @param {Object} itemB - The second search result item.
+ * @returns {number} - Returns 3 if `file` differs, 2 if `h1` differs, 1 if `h2` differs, or 0 if all properties match.
+ */
+function getCommonAncestorLevel(searchResultItemA, searchResultItemB) {
+  if (searchResultItemA.file !== searchResultItemB.file) {
+    return 0;
+  }
+
+  if (searchResultItemA.h1 !== searchResultItemB.h1) {
+    return 1;
+  }
+
+  if (searchResultItemA.h2 !== searchResultItemB.h2) {
+    return 2;
+  }
+
+  if (searchResultItemA.h3 !== searchResultItemB.h3) {
+    return 3;
+  }
+  return 3;
 }
 
 /**
@@ -580,9 +595,10 @@ function addMissingTopSections(searchResults) {
     h1Sections[keyName].push(result);
   }
 
+  console.log("Search result", JSON.parse(JSON.stringify(searchResults)));
   for (const value of Object.values(h1Sections)) {
     const topSection = value.find((r) => {
-      return r.item.h2 === undefined;
+      return r.item.h2 === undefined && r.item.h3;
     });
     if (topSection === undefined) {
       const fakeH1 = structuredClone(value[0]);
@@ -603,59 +619,101 @@ function addMissingTopSections(searchResults) {
  *
  * @example
  */
-function reorderSearchResultByGroup(searchResults) {
-  const results = addMissingTopSections(searchResults);
-
-  // group by h1
-  const groupedSearchResult = groupItems(results);
-
-  return groupedSearchResult;
+function reorderSearchResults(searchResults) {
+  const groupedSearchResult = groupItems(searchResults);
+  return flattenGroupedItems(groupedSearchResult);
 }
 /**
- * Groups items in an array based on their h1, h2 and h3 titles.
+ * Groups items from the provided `results` array by their file, h1, h2, and h3 properties.
+ * If a property is missing at any level, it defaults to using the `__DEFAULT__` symbol.
+ * Items are nested based on their structure, creating keys for each
+ * unique combination of `file`, `h1`, `h2`, and `h3`.
+ *
  * @param {array} array The array to group.
  * @returns An object containing items grouped.
  */
 function groupItems(results) {
-  const grouping = {};
+  const groupedByFileAndHeader = {};
 
   results.forEach((res) => {
     let item = res.item;
 
-    if (!grouping[item.file]) {
-      grouping[item.file] = {};
+    if (item.file === undefined || item.h1 === undefined) {
+      // item.file and item.h1 is required, if it's missing let's skeep the search result.
+      return;
     }
-    // Create the h1 key
-    if (!grouping[item.file][item.h1]) {
-      grouping[item.file][item.h1] = {};
+    if (!groupedByFileAndHeader[item.file]) {
+      groupedByFileAndHeader[item.file] = {};
+    }
+
+    if (!groupedByFileAndHeader[item.file][item.h1]) {
+      groupedByFileAndHeader[item.file][item.h1] = {};
     }
 
     // Create the h2 key, if exists
     if (item.h2) {
-      if (!grouping[item.file][item.h1][item.h2]) {
-        grouping[item.file][item.h1][item.h2] = {};
+      if (!groupedByFileAndHeader[item.file][item.h1][item.h2]) {
+        groupedByFileAndHeader[item.file][item.h1][item.h2] = {};
       }
 
       // Create the h3 key, if exists
       if (item.h3) {
-        if (!grouping[item.file][item.h1][item.h2][item.h3]) {
-          grouping[item.file][item.h1][item.h2][item.h3] = [];
+        if (!groupedByFileAndHeader[item.file][item.h1][item.h2][item.h3]) {
+          groupedByFileAndHeader[item.file][item.h1][item.h2][item.h3] = [];
         }
-        grouping[item.file][item.h1][item.h2][item.h3].push(item);
+        groupedByFileAndHeader[item.file][item.h1][item.h2][item.h3].push(item);
       } else {
         // If no h3, use '__DEFAULT__'
-        if (!grouping[item.file][item.h1][item.h2][__DEFAULT_SYMBOL__]) {
-          grouping[item.file][item.h1][item.h2][__DEFAULT_SYMBOL__] = item;
+        if (
+          !groupedByFileAndHeader[item.file][item.h1][item.h2][
+            __DEFAULT_SYMBOL__
+          ]
+        ) {
+          groupedByFileAndHeader[item.file][item.h1][item.h2][
+            __DEFAULT_SYMBOL__
+          ] = [item];
         }
       }
     } else {
       // If no h2, use '__DEFAULT__' under h1
-      if (!grouping[item.file][item.h1][__DEFAULT_SYMBOL__]) {
-        grouping[item.file][item.h1][__DEFAULT_SYMBOL__] = item;
+      if (!groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__]) {
+        groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__] = [item];
       }
     }
   });
-  return grouping;
+  return groupedByFileAndHeader;
+}
+/**
+ * From a nested object contain search results returns an array with all
+ * the search items.
+ */
+function flattenGroupedItems(groupedByFileAndHeader) {
+  const flattenedItems = [];
+
+  // Helper function to recursively traverse the nested structure
+  function traverse(group) {
+    // If the group is an array, it means there is no deeper level.
+    if (Array.isArray(group)) {
+      flattenedItems.push(...group);
+    } else if (group !== null && typeof group === "object") {
+      if (group[__DEFAULT_SYMBOL__] !== undefined) {
+        traverse(group[__DEFAULT_SYMBOL__]);
+      }
+
+      // Object.keys() does not iterate through Symbol, so the __DEFAULT_SYMBOL__
+      // key will not be handled here.
+      for (const key of Object.keys(group)) {
+        traverse(group[key]);
+      }
+    }
+  }
+  // Start traversing from the top-level grouping
+  for (const file in groupedByFileAndHeader) {
+    for (const h1 in groupedByFileAndHeader[file]) {
+      traverse(groupedByFileAndHeader[file][h1]);
+    }
+  }
+  return flattenedItems;
 }
 
 /**
@@ -1090,10 +1148,38 @@ function getSearchIconElements() {
 function getSearchWrapperElement() {
   return document.getElementById("search-wrapper");
 }
+/**
+ * Creates an array of rendered elements based on the specified display level and item data.
+ *
+ * @param {Object} item - The item containing heading properties (h1, h2, h3).
+ * @param {number} displayFromLevel - The level from which to start rendering headings (1 to 3).
+ * @returns {Array} An array of elements created for the relevant heading levels.
+ */
+function createHeadingElements(item, displayFromLevel) {
+  const headingElements = [];
+  const headingLevelToRender = [];
 
-function createResultElement(item) {
+  if (displayFromLevel <= 1 && item.h1) {
+    headingLevelToRender.push("h1");
+  }
+
+  if (displayFromLevel <= 2 && item.h2) {
+    headingLevelToRender.push("h2");
+  }
+
+  if (displayFromLevel <= 3 && item.h3) {
+    headingLevelToRender.push("h3");
+  }
+
+  for (const headingLevel of headingLevelToRender) {
+    const element = createResultElement(item, headingLevel);
+    headingElements.push(element);
+  }
+  return headingElements;
+}
+
+function createResultElement(item, itemLevel) {
   const links = searchIndexLinks[+item.id];
-  let elementLevel = item.h2 ? (item.h3 ? "h3" : "h2") : "h1";
   const contentDiv = document.createElement("div");
   contentDiv.className = "search-result-item";
   const locationDiv = document.createElement("div");
@@ -1101,19 +1187,19 @@ function createResultElement(item) {
 
   let href;
   let textContent;
-  if (elementLevel === "h3") {
+  if (itemLevel === "h3") {
     contentDiv.classList.add("search-result-item-is-h3");
     if (links.anchorH3 !== undefined) {
       href = rootUrl + "/" + links.file + "#" + links.anchorH3;
     }
     textContent = item.h3;
-  } else if (elementLevel === "h2") {
+  } else if (itemLevel === "h2") {
     contentDiv.classList.add("search-result-item-is-h2");
     if (links.anchorH2 !== undefined) {
       href = rootUrl + "/" + links.file + "#" + links.anchorH2;
     }
     textContent = item.h2;
-  } else if (elementLevel === "h1") {
+  } else if (itemLevel === "h1") {
     contentDiv.classList.add("search-result-item-is-h1");
     if (links.anchorH1 !== undefined) {
       href = rootUrl + "/" + links.file + "#" + links.anchorH1;
@@ -1130,7 +1216,7 @@ function createResultElement(item) {
   }
 
   anchorElement.textContent = textContent;
-  anchorElement.className = elementLevel;
+  anchorElement.className = itemLevel;
   locationDiv.appendChild(anchorElement);
 
   const bodyDiv = document.createElement("div");
