@@ -544,17 +544,11 @@ function updateSearchResults(value) {
 }
 
 /**
- * Compares two search result items to determine the deepest common ancestor based on their properties.
- *
- * The comparison order is:
- * 1. `file` - If files don't match, return 3.
- * 2. `h1` - If `file` matches but `h1` doesn't, return 2.
- * 3. `h2` - If both `file` and `h1` match but `h2` doesn't, return 1.
- * 4. If all properties match, return 0 (indicating the deepest common ancestor).
+ * Compares two search result items to determine the deepest common ancestor level.
  *
  * @param {Object} itemA - The first search result item.
  * @param {Object} itemB - The second search result item.
- * @returns {number} - Returns 3 if `file` differs, 2 if `h1` differs, 1 if `h2` differs, or 0 if all properties match.
+ * @returns {number} - Returns 0 if items does not share same file, 1 if h1 is different, etc...
  */
 function getCommonAncestorLevel(searchResultItemA, searchResultItemB) {
   if (searchResultItemA.file !== searchResultItemB.file) {
