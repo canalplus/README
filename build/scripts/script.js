@@ -570,42 +570,6 @@ function getCommonAncestorLevel(searchResultItemA, searchResultItemB) {
 }
 
 /**
- * Add missing top sections headers (h1) in search results.
- * Search result can be h1, h2 or h3, but the search algorithm can
- * find a match for a h3 section and not for the h1.
- * To not display h3 orphan in the tree view, we manually add to
- * the search result the h1 that is a parent to that h3.
- * @param {array} searchResults
- * @returns
- */
-function addMissingTopSections(searchResults) {
-  const h1Sections = {};
-  const missingH1 = [];
-  for (result of searchResults) {
-    const keyName = `${result.item.file}-${result.item.h1}`;
-    if (!h1Sections[keyName]) {
-      h1Sections[keyName] = [];
-    }
-    h1Sections[keyName].push(result);
-  }
-
-  console.log("Search result", JSON.parse(JSON.stringify(searchResults)));
-  for (const value of Object.values(h1Sections)) {
-    const topSection = value.find((r) => {
-      return r.item.h2 === undefined && r.item.h3;
-    });
-    if (topSection === undefined) {
-      const fakeH1 = structuredClone(value[0]);
-      fakeH1.item.h2 = undefined;
-      fakeH1.item.h3 = undefined;
-      fakeH1.item.body = "";
-      missingH1.push(fakeH1);
-    }
-  }
-  return searchResults.concat(missingH1);
-}
-
-/**
  * Re-orders search results by grouping them according
  * to their shared section headings (h1, h2, h3).
  * @param {array} searchResults The array of search results to be re-ordered.
