@@ -120,7 +120,7 @@ export default async function createDocumentationPage({
     tocMd,
     nbTocElements,
   } = await parseMD(data, inputDir, outputDir, baseOutDir, linkTranslator);
-  const searchData = getSearchDataForContent(resHtml);
+  const searchData = getSearchDataForContent(resHtml, outputUrlFromRoot);
   searchIndex.push({
     file: outputUrlFromRoot,
     index: searchData,
