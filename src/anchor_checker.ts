@@ -74,7 +74,7 @@ export default class AnchorChecker {
   public addAnchorReference(
     inputFileWithLink: string,
     inputFileLinkDestination: string,
-    anchor: string
+    anchor: string,
   ): void {
     this._anchorsList.push({
       inputFileWithLink,
@@ -94,7 +94,7 @@ export default class AnchorChecker {
     for (const elt of this._anchorsList) {
       const validity = this.checkValidAnchor(
         elt.inputFileLinkDestination,
-        elt.anchor
+        elt.anchor,
       );
       if (validity !== AnchorValidity.Found) {
         badResults.push({ ...elt, validity });

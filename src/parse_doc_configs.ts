@@ -43,7 +43,6 @@ export interface LocalDocPageGroupInformation {
   defaultOpen: boolean;
 }
 
-
 interface RootDocConfigInput {
   logo?: {
     srcPath: string;

@@ -20,7 +20,7 @@ export default function generateSidebarHtml(
   pages: Array<LocalDocPageInformation | LocalDocPageGroupInformation>,
   currentPageIndexes: number[],
   currentPath: string,
-  logoInfo: LogoInformation | null
+  logoInfo: LogoInformation | null,
 ): string {
   const sidebarHeaderHtml = constructSidebarHeaderHtml(logoInfo);
   const links = pages
@@ -61,11 +61,11 @@ export default function generateSidebarHtml(
 
   function generateLiForPage(
     p: LocalDocPageInformation,
-    isActive: boolean
+    isActive: boolean,
   ): string {
     const relativeUri = toUriCompatibleRelativePath(
       p.outputFile,
-      path.dirname(currentPath)
+      path.dirname(currentPath),
     );
     const activeClass = isActive ? " active" : "";
     const cleanedHref = encode(relativeUri);

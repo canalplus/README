@@ -9,12 +9,13 @@
   "main": "build/index.js",
   "scripts": {
     "build": "npm run generateVersionFile && tsc",
+    "check:types": "tsc --noEmit --project .",
     "clean": "rimraf doc-build",
     "doc": "node build/index.js --clean --input doc --output doc-build -p `npm run --silent getVersion`",
+    "fmt": "prettier --write .",
     "generateVersionFile": "echo \"export default \\\"$(npm --silent run getVersion)\\\";\" > src/version.ts",
     "getVersion": "node -e \"console.log(require('./package.json').version)\"",
-    "lint": "eslint src/**",
-    "fmt": "prettier src/* --write src"
+    "lint": "eslint src/**"
   },
   "repository": {
     "type": "git",
@@ -37,7 +38,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.0.4",
-    "prettier": "^3.2.4",
+    "prettier": "^3.4.2",
     "typescript": "^5.3.3"
   },
   "types": "./build/index.d.ts"

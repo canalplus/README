@@ -18,7 +18,7 @@
     "types": ["node"],
     "module": "es2022",
     "moduleResolution": "Node",
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts"]
 }
