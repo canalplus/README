@@ -563,9 +563,6 @@ function getCommonAncestorLevel(searchResultItemA, searchResultItemB) {
     return 2;
   }
 
-  if (searchResultItemA.h3 !== searchResultItemB.h3) {
-    return 3;
-  }
   return 3;
 }
 
@@ -597,7 +594,7 @@ function groupItems(results) {
     let item = res.item;
 
     if (item.file === undefined || item.h1 === undefined) {
-      // item.file and item.h1 is required, if it's missing let's skeep the search result.
+      // item.file and item.h1 is required, if it's missing let's skip the search result.
       return;
     }
     if (!groupedByFileAndHeader[item.file]) {
@@ -621,7 +618,7 @@ function groupItems(results) {
         }
         groupedByFileAndHeader[item.file][item.h1][item.h2][item.h3].push(item);
       } else {
-        // If no h3, use '__DEFAULT__'
+        // If no h3, use the default symbol
         if (
           !groupedByFileAndHeader[item.file][item.h1][item.h2][
             __DEFAULT_SYMBOL__
@@ -629,14 +626,18 @@ function groupItems(results) {
         ) {
           groupedByFileAndHeader[item.file][item.h1][item.h2][
             __DEFAULT_SYMBOL__
-          ] = [item];
+          ] = [];
         }
+        groupedByFileAndHeader[item.file][item.h1][item.h2][
+          __DEFAULT_SYMBOL__
+        ].push(item);
       }
     } else {
-      // If no h2, use '__DEFAULT__' under h1
+      // If no h2, use the default symbol under h1
       if (!groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__]) {
-        groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__] = [item];
+        groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__] = [];
       }
+      groupedByFileAndHeader[item.file][item.h1][__DEFAULT_SYMBOL__].push(item);
     }
   });
   return groupedByFileAndHeader;
