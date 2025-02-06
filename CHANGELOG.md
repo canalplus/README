@@ -1,3 +1,14 @@
+# 0.6.0 (2025-02-06)
+
+## Features
+
+- Add optional `siteMapRoot` option to generate a sitemap [#2]
+
+## Other
+
+- Display documentation search results as a tree [#1]
+- Replace `elasticlunr` with `fuse.js` to improve some search results [#3]
+
 # 0.5.0 (2024-01-29)
 
 ## Other
