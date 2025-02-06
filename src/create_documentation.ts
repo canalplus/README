@@ -16,6 +16,7 @@ import type {
   LocalDocPageInformation,
   LinkCategory,
 } from "./parse_doc_configs.js";
+import { SiteMapCreator } from "./site_map_creator.js";
 import { mkdirParent, toUriCompatibleRelativePath } from "./utils.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -73,6 +74,10 @@ export default async function createDocumentation(
    */
   const anchorChecker = new AnchorChecker();
 
+  /**
+   * Will be used to generate the site map file for search engine.
+   */
+  const siteMapCreator = new SiteMapCreator();
   /**
    * Map where the key is the input Markdown file and the value the
    * corresponding output HTML file.
@@ -146,6 +151,18 @@ export default async function createDocumentation(
         }
         log("WARNING", message);
       }
+    }
+  }
+
+  if (config.siteMapRoot !== undefined) {
+    const xml = siteMapCreator.generateSiteMapXML();
+    try {
+      const sitemapLoc = path.join(path.resolve(baseOutDir), "sitemap.xml");
+      await promisify(fs.writeFile)(sitemapLoc, xml);
+    } catch (err) {
+      const srcMessage =
+        ((err as { message: string }) ?? {}).message ?? "Unknown error";
+      log("WARNING", `Could not create sitemap file: ${srcMessage}`);
     }
   }
 
@@ -298,6 +315,25 @@ export default async function createDocumentation(
       sidebarHtml,
     });
     anchorChecker.addAnchorsForFile(inputFile, anchors);
+
+    const outputUrlFromRoot = toUriCompatibleRelativePath(
+      outputFile,
+      baseOutDir,
+    );
+    const root = config.siteMapRoot;
+    if (config.siteMapRoot !== undefined) {
+      try {
+        // it is recommended that sitemap should only use absolute URL 
+        const absoluteURL = new URL(outputUrlFromRoot, root).href;
+        siteMapCreator.addToSiteMap(absoluteURL);
+      } catch (err) {
+        const srcMessage =
+          ((err as { message: string }) ?? {}).message ?? "Unknown error";
+        throw new Error(
+          `Could not create siteMap url "${outputUrlFromRoot}", the root ${root} may be incorrect : ${srcMessage}`,
+        );
+      }
+    }
   }
 }
 
