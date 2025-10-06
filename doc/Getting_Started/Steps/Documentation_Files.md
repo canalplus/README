@@ -180,7 +180,6 @@ simple way:
 2. Remaining spaces are replaced by a dash (`-`).
 
 3. Every characters not part of any of those sets:
-
    - Upper-case latin letters from A to Z
    - Lower-case latin letters from a to z
    - dashes (`-`)

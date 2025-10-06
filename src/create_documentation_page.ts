@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
 import { load } from "cheerio";
-import type { AnyNode, Cheerio } from "cheerio";
+import type { Cheerio } from "cheerio";
 import convertMDToHTML from "./convert_MD_to_HMTL.js";
 import generatePageHtml from "./generate_page_html.js";
 import type { FileSearchIndex } from "./get_search_data_for_content.js";
@@ -167,7 +167,9 @@ export default async function createDocumentationPage({
  * get wrong.
  */
 async function checkAndCopyMediaAsset(
-  mediaTag: Cheerio<AnyNode>,
+  // Unsure of what Cheerio want us to do here...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mediaTag: Cheerio<any>,
   inputDir: string,
   outputDir: string,
   baseOutDir: string,

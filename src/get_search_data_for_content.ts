@@ -1,4 +1,3 @@
-import type { AnyNode } from "cheerio";
 import { load } from "cheerio";
 
 export interface FileSearchIndex {
@@ -33,7 +32,7 @@ export default function getSearchDataForContent(
   let currentH3Anchor: string | undefined;
   const currentBody: string[] = [];
   let currentLevel: string | undefined;
-  let lastAnchor: AnyNode | undefined;
+  let lastAnchor;
   for (let i = 0; i < children.length; i++) {
     const child = children[i];
     switch (child.name.toLowerCase()) {
@@ -120,7 +119,9 @@ export default function getSearchDataForContent(
     currentBody.length = 0;
   }
 
-  function getAnchorName(elt: AnyNode | undefined) {
+  // Unsure of what Cheerio want us to do here...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getAnchorName(elt: any) {
     if (elt === undefined) {
       return;
     }

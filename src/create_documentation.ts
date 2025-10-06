@@ -323,7 +323,7 @@ export default async function createDocumentation(
     const root = config.siteMapRoot;
     if (config.siteMapRoot !== undefined) {
       try {
-        // it is recommended that sitemap should only use absolute URL 
+        // it is recommended that sitemap should only use absolute URL
         const absoluteURL = new URL(outputUrlFromRoot, root).href;
         siteMapCreator.addToSiteMap(absoluteURL);
       } catch (err) {

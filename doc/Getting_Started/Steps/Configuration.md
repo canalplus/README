@@ -112,7 +112,7 @@ properties indicated as "optional" can be omitted:
     }
   ],
   // Optional string that specifies the base URL that would be used when generating
-  // the sitemap.xml file. 
+  // the sitemap.xml file.
   // If not defined, the generation of the sitemap.xml file will be omitted.
   "siteMapRoot": "https://example.com/"
 }

@@ -24,22 +24,22 @@
   "author": "peaberberian",
   "license": "WTFPL",
   "dependencies": {
-    "cheerio": "1.0.0-rc.12",
-    "highlight.js": "11.9.0",
-    "html-entities": "2.4.0",
-    "markdown-it": "14.0.0",
-    "rimraf": "^5.0.5"
+    "cheerio": "1.1.2",
+    "highlight.js": "11.11.1",
+    "html-entities": "2.6.0",
+    "markdown-it": "14.1.0",
+    "rimraf": "^6.0.1"
   },
   "devDependencies": {
-    "@types/markdown-it": "^13.0.7",
-    "@types/node": "^20.11.8",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^24.7.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.0.4",
-    "prettier": "^3.4.2",
-    "typescript": "^5.3.3"
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
   },
   "types": "./build/index.d.ts"
 }
