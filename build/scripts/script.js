@@ -815,6 +815,9 @@ function initializeSideBarLinks() {
       loadSidebarLink(link, { display: false, updateURL: false });
     }
     function onClick(evt) {
+      if (evt.ctrlKey || evt.altKey) {
+        return;
+      }
       evt.preventDefault();
       loadSidebarLink(link, { display: true, updateURL: true });
     }
@@ -851,6 +854,9 @@ function initializeContentLinks() {
         contentLink.removeEventListener("mouseover", onMouseOver);
       });
       function onClick(evt) {
+        if (evt.ctrlKey || evt.altKey) {
+          return;
+        }
         evt.preventDefault();
         loadSidebarLink(correspondingElt, {
           display: true,
